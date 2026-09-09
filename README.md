@@ -6,21 +6,9 @@
 
 Gerar receita para a ConnectWeb antes de expandir o produto.
 
-A Livia será usada primeiro na própria ConnectWeb para receber, entender, qualificar e encaminhar potenciais clientes. Em paralelo, uma operação enxuta de prospecção encontra empresas com potencial, qualifica os leads e conduz os interessados até uma demonstração e venda.
-
-## Regra principal
-
 **Receita primeiro. Funcionalidades depois.**
 
-Qualquer nova funcionalidade deve ser avaliada pela pergunta:
-
-> Isso aumenta nossa capacidade de conseguir ou fechar clientes da Livia agora?
-
-Se não aumentar, fica fora da Fase Receita.
-
 ## ICP inicial
-
-O primeiro teste comercial está fechado em três segmentos:
 
 - **Barbearias**
 - **Salões de beleza**
@@ -30,81 +18,50 @@ Não ampliar o ICP antes de obter dados reais de conversão.
 
 ## Oferta comercial
 
-Posicionamento inicial:
-
 > **Uma recepcionista virtual que atende seus clientes no WhatsApp enquanto você trabalha.**
 
-A venda deve destacar resultado e experiência, não apenas IA. O principal ativo comercial será permitir que o prospect veja a Livia funcionando.
+A venda deve destacar resultado e experiência, não apenas IA.
 
-## Fluxo comercial
+## Fluxo
 
 ```text
-Google Maps
-    ↓
-Apify
-    ↓
-Lista de empresas
-    ↓
-Normalização / deduplicação
-    ↓
-Filtro e qualificação
-    ↓
-IA / personalização
-    ↓
-Contato permitido
-    ↓
-Interessado
-    ↓
-Livia
-    ↓
-Qualificação comercial
-    ↓
-Demonstração
-    ↓
-Nilton / humano
-    ↓
-Proposta
-    ↓
-Fechamento
-    ↓
-Cliente Livia
+Google Maps → Apify → Normalização → Deduplicação → Score
+→ IA/personalização → Fila de prospecção → Contato permitido
+→ Resposta → Interessado → Livia → Qualificação → Humano → Venda
 ```
 
-## Livia na ConnectWeb
+## Estado atual da implementação
 
-A própria ConnectWeb será o primeiro ambiente real da Livia.
+O motor já possui:
 
-Responsabilidades da Livia:
+- coleta via `compass/crawler-google-places`;
+- buscas dos 3 segmentos por cidade;
+- normalização de nome, telefone, site, endereço, avaliações e localização;
+- deduplicação;
+- classificação do ICP;
+- score de 0–100;
+- persistência JSON/CSV;
+- personalização via OpenAI Responses API;
+- fila de revisão de prospecção sem disparo automático;
+- proteção de OPT-OUT;
+- transições controladas do funil comercial;
+- testes automatizados para fila e funil.
 
-- receber o primeiro contato;
-- identificar quem está falando;
-- entender o motivo do contato;
-- responder dúvidas básicas sobre a ConnectWeb e a Livia;
-- explicar a solução quando fizer sentido;
-- coletar informações comerciais essenciais;
-- identificar intenção de compra;
-- encaminhar leads qualificados para atendimento humano.
+## Execução
 
-## Prospecção MVP
+```bash
+npm install
+cp .env.example .env
+npm run build
+npm test
+npm run prospect -- collect --city "Bauru, SP, Brasil" --max 100
+npm run prospect -- show
+npm run prospect -- personalize
+```
 
-A primeira operação será pequena e mensurável:
+O `APIFY_TOKEN` deve existir somente no ambiente seguro de execução. Nunca publique o token no GitHub.
 
-**100 empresas → validação → 500/mês → escala para 1.000/mês**
-
-Qualificação inicial considera:
-
-- segmento dentro do ICP;
-- WhatsApp/canal de atendimento;
-- sinais de necessidade de atendimento ou agendamento;
-- presença digital;
-- potencial de volume de atendimento;
-- aderência ao problema que a Livia resolve.
-
-O objetivo é qualidade de lead, não quantidade.
-
-## CRM mínimo
-
-Estados oficiais da Fase Receita:
+## Funil
 
 ```text
 NOVO
@@ -120,77 +77,31 @@ PERDIDO
 OPT-OUT
 ```
 
-## Métricas
+As transições são validadas por código para evitar saltos incorretos no processo comercial.
 
-O projeto será avaliado pelo funil comercial:
+## Regra de contato
 
-- empresas encontradas;
-- empresas qualificadas;
-- contatos realizados;
-- respostas;
-- interessados;
-- demonstrações;
-- propostas;
-- clientes ganhos;
-- receita gerada;
-- custo de aquisição;
-- conversão por segmento;
-- principais objeções.
+Este projeto **não dispara WhatsApp automaticamente** a partir de números encontrados no Google Maps. Descoberta de empresas, qualificação e preparação de abordagem são separadas do contato.
 
-A métrica final é **receita**, não quantidade de automações.
+Qualquer contato deve usar canal e processo compatíveis com LGPD, base legal/consentimento aplicável, regras do canal e OPT-OUT.
 
-## Escopo da Fase Receita
+## Próximo passo operacional
 
-### Incluído
+Depois que o ambiente estiver configurado na Vercel:
 
-- prospecção dos três segmentos iniciais;
-- coleta e organização de leads;
-- normalização e deduplicação;
-- qualificação;
-- geração de abordagem com IA;
-- controle de status;
-- entrada de leads interessados na Livia;
-- recepção comercial da ConnectWeb;
-- qualificação comercial;
-- encaminhamento para humano;
-- acompanhamento básico do funil;
-- métricas de conversão.
+1. executar a primeira coleta de 100 empresas;
+2. revisar a qualidade dos dados;
+3. personalizar os leads qualificados;
+4. revisar as abordagens;
+5. definir o fluxo de contato permitido;
+6. registrar respostas;
+7. conectar **somente os interessados** à Livia;
+8. medir demonstrações, propostas e vendas.
 
-### Fora do escopo por enquanto
-
-- dashboard avançado;
-- múltiplos agentes complexos;
-- novas integrações sem necessidade comercial;
-- aplicativo mobile novo;
-- recursos de CRM não essenciais;
-- automações que não contribuam diretamente para aquisição ou fechamento;
-- expansão prematura para novos segmentos;
-- funcionalidades experimentais sem impacto mensurável em receita.
-
-## Compliance
-
-A operação deve respeitar LGPD, políticas da Meta e regras dos canais utilizados. O projeto não deve ser tratado como uma máquina de disparo indiscriminado.
-
-O controle de **OPT-OUT** é obrigatório. Solicitações de não contato devem impedir novas comunicações comerciais automatizadas.
-
-## Princípio de desenvolvimento
+## Princípio
 
 ```text
 Construir → Colocar para rodar → Medir → Vender → Aprender → Melhorar
 ```
-
-Não:
-
-```text
-Construir → adicionar recurso → adicionar recurso → adicionar recurso → nunca vender
-```
-
-## Critério de sucesso da fase
-
-A Fase Receita será considerada validada quando a máquina conseguir gerar clientes pagantes reais para a Livia e os dados do funil permitirem identificar claramente onde melhorar a conversão.
-
-## Status
-
-**FASE: RECEITA — EM IMPLEMENTAÇÃO**
 
 **Prioridade absoluta: primeiro cliente pagante.**
