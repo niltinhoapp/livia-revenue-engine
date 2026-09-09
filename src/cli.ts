@@ -23,12 +23,12 @@ async function loadRaw(file: string): Promise<RawPlace[]> {
 
 async function collect() {
   const city = arg('--city') || process.env.DEFAULT_CITY || 'Macatuba, SP, Brasil';
-  const max = Number(arg('--max') || 100);
+  const max = Math.max(1, Number(arg('--max') || 100));
   const queries = buildQueries(city);
-  console.log(`Coletando até ${max} resultados por busca: ${city}`);
-  const raw = await collectFromApify({ queries, maxItems: max });
+  console.log(`Coletando até ${max} empresas no Google Maps: ${city}`);
+  const raw = await collectFromApify({ queries, location: city, maxItems: max });
   const normalized = raw.map((item) => normalizePlace(item)).filter((x): x is Lead => Boolean(x));
-  const qualified = qualifyAll(dedupeLeads(normalized));
+  const qualified = qualifyAll(dedupeLeads(normalized)).slice(0, max);
   await saveLeads(qualified);
   printSummary(qualified);
 }
