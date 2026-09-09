@@ -14,9 +14,22 @@ Executar o menor caminho possível entre o estado atual e os primeiros clientes 
 - [x] Definir funil comercial
 - [x] Definir estados do CRM
 - [x] Definir métricas
-- [ ] Definir primeiro segmento-alvo
-- [ ] Definir oferta comercial inicial
+- [x] Definir primeiro ICP
+- [x] Definir posicionamento comercial inicial
+- [ ] Definir preço/oferta comercial final
 - [ ] Definir roteiro de demonstração
+
+### ICP fechado para o primeiro teste
+
+- [x] Barbearias
+- [x] Salões de beleza
+- [x] Manicure / nail designers
+
+**Regra:** não abrir novos segmentos antes dos primeiros dados reais de conversão.
+
+### Posicionamento inicial
+
+> **Uma recepcionista virtual que atende seus clientes no WhatsApp enquanto você trabalha.**
 
 ---
 
@@ -37,15 +50,16 @@ Executar o menor caminho possível entre o estado atual e os primeiros clientes 
 
 ## Marco 3 — Prospecção MVP
 
-- [ ] Definir consultas/segmentos para coleta
+- [ ] Definir consultas para os 3 segmentos
 - [ ] Configurar coleta de empresas
 - [ ] Normalizar dados
 - [ ] Remover duplicados
-- [ ] Criar score de qualificação
+- [ ] Criar score de qualificação simples
 - [ ] Criar armazenamento dos leads
 - [ ] Criar geração de abordagem com IA
 - [ ] Criar controle de status
-- [ ] Definir canal e processo de contato compatíveis com as regras aplicáveis
+- [ ] Definir processo de contato compatível com as regras aplicáveis
+- [ ] Implementar OPT-OUT
 
 **Saída:** primeira lista real de leads qualificados.
 
@@ -62,15 +76,20 @@ Executar o menor caminho possível entre o estado atual e os primeiros clientes 
 - [ ] Medir propostas
 - [ ] Medir vendas
 - [ ] Registrar objeções
+- [ ] Comparar desempenho entre segmentos
 - [ ] Ajustar abordagem
 
-**Objetivo:** encontrar uma combinação de segmento + oferta + abordagem que gere oportunidades reais.
+**Objetivo:** encontrar uma combinação comprovada de segmento + oferta + abordagem que gere oportunidades reais.
+
+**Meta principal:** primeiro cliente pagante da Livia.
 
 ---
 
 ## Marco 5 — Escala controlada
 
 ### Lote 2: 500 empresas/mês
+
+Só executar se o lote de validação apresentar sinal comercial suficiente.
 
 - [ ] Escalar somente após validação
 - [ ] Automatizar tarefas repetitivas comprovadas
@@ -79,6 +98,8 @@ Executar o menor caminho possível entre o estado atual e os primeiros clientes 
 - [ ] Melhorar pontos de perda do funil
 
 ### Lote 3: 1.000 empresas/mês
+
+Só executar após nova validação.
 
 - [ ] Escalar para 1.000 empresas/mês
 - [ ] Monitorar capacidade operacional
@@ -112,7 +133,11 @@ Executar o menor caminho possível entre o estado atual e os primeiros clientes 
 - [ ] Não ampliar o produto antes de validar vendas
 - [ ] Não transformar o projeto em um CRM completo
 - [ ] Não trocar arquitetura estável sem motivo
+- [ ] Não abrir novos nichos antes de testar o ICP inicial
+- [ ] Não criar automação de disparo indiscriminado
 
 # Regra de ouro
 
 > **Primeiro vender. Depois melhorar com base nos dados reais.**
+
+Cada tarefa deve aproximar o projeto do primeiro cliente pagante.
