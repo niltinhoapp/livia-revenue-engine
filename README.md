@@ -18,6 +18,24 @@ Qualquer nova funcionalidade deve ser avaliada pela pergunta:
 
 Se não aumentar, fica fora da Fase Receita.
 
+## ICP inicial
+
+O primeiro teste comercial está fechado em três segmentos:
+
+- **Barbearias**
+- **Salões de beleza**
+- **Manicure / nail designers**
+
+Não ampliar o ICP antes de obter dados reais de conversão.
+
+## Oferta comercial
+
+Posicionamento inicial:
+
+> **Uma recepcionista virtual que atende seus clientes no WhatsApp enquanto você trabalha.**
+
+A venda deve destacar resultado e experiência, não apenas IA. O principal ativo comercial será permitir que o prospect veja a Livia funcionando.
+
 ## Fluxo comercial
 
 ```text
@@ -26,6 +44,8 @@ Google Maps
 Apify
     ↓
 Lista de empresas
+    ↓
+Normalização / deduplicação
     ↓
 Filtro e qualificação
     ↓
@@ -65,28 +85,22 @@ Responsabilidades da Livia:
 - identificar intenção de compra;
 - encaminhar leads qualificados para atendimento humano.
 
-## Prospecção
+## Prospecção MVP
 
-A primeira meta operacional é trabalhar com até **1.000 empresas/mês**, mas a implantação será gradual:
+A primeira operação será pequena e mensurável:
 
-1. 100 empresas para validar;
-2. 500 empresas para otimizar;
-3. 1.000 empresas para escalar.
+**100 empresas → validação → 500/mês → escala para 1.000/mês**
 
-O foco inicial será em segmentos onde atendimento, agendamento, orçamento ou triagem via WhatsApp tenham valor claro.
+Qualificação inicial considera:
 
-## Qualificação
-
-Cada empresa deve receber um score comercial baseado em sinais como:
-
-- segmento;
-- presença de WhatsApp;
-- site;
+- segmento dentro do ICP;
+- WhatsApp/canal de atendimento;
+- sinais de necessidade de atendimento ou agendamento;
 - presença digital;
-- volume aparente de atendimento;
-- adequação ao problema que a Livia resolve.
+- potencial de volume de atendimento;
+- aderência ao problema que a Livia resolve.
 
-O objetivo não é coletar o maior número possível de empresas. É encontrar as empresas com maior potencial.
+O objetivo é qualidade de lead, não quantidade.
 
 ## CRM mínimo
 
@@ -119,7 +133,9 @@ O projeto será avaliado pelo funil comercial:
 - propostas;
 - clientes ganhos;
 - receita gerada;
-- custo de aquisição.
+- custo de aquisição;
+- conversão por segmento;
+- principais objeções.
 
 A métrica final é **receita**, não quantidade de automações.
 
@@ -127,8 +143,9 @@ A métrica final é **receita**, não quantidade de automações.
 
 ### Incluído
 
-- prospecção de empresas;
+- prospecção dos três segmentos iniciais;
 - coleta e organização de leads;
+- normalização e deduplicação;
 - qualificação;
 - geração de abordagem com IA;
 - controle de status;
@@ -147,18 +164,16 @@ A métrica final é **receita**, não quantidade de automações.
 - aplicativo mobile novo;
 - recursos de CRM não essenciais;
 - automações que não contribuam diretamente para aquisição ou fechamento;
-- expansão prematura para dezenas de segmentos;
+- expansão prematura para novos segmentos;
 - funcionalidades experimentais sem impacto mensurável em receita.
 
 ## Compliance
 
-A operação deve respeitar as regras aplicáveis de privacidade, LGPD e políticas dos canais utilizados. O projeto não deve ser tratado como uma máquina de disparo indiscriminado.
+A operação deve respeitar LGPD, políticas da Meta e regras dos canais utilizados. O projeto não deve ser tratado como uma máquina de disparo indiscriminado.
 
 O controle de **OPT-OUT** é obrigatório. Solicitações de não contato devem impedir novas comunicações comerciais automatizadas.
 
 ## Princípio de desenvolvimento
-
-Construir somente o necessário para colocar a operação em produção e medir resultado.
 
 ```text
 Construir → Colocar para rodar → Medir → Vender → Aprender → Melhorar
@@ -178,4 +193,4 @@ A Fase Receita será considerada validada quando a máquina conseguir gerar clie
 
 **FASE: RECEITA — EM IMPLEMENTAÇÃO**
 
-**Prioridade absoluta: primeiros clientes pagantes.**
+**Prioridade absoluta: primeiro cliente pagante.**
