@@ -75,13 +75,28 @@ export function normalizePlace(raw: RawPlace, now = new Date().toISOString()): L
 }
 
 export function dedupeLeads(leads: Lead[]): Lead[] {
-  const seen = new Set<string>();
+  const seenPhones = new Set<string>();
+  const seenSourceIds = new Set<string>();
+  const seenFallbackKeys = new Set<string>();
   const result: Lead[] = [];
+
   for (const lead of leads) {
-    const key = lead.sourceId || lead.phone || `${normalizeText(lead.name)}|${normalizeText(lead.address)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    // O telefone é a chave operacional mais importante para prospecção:
+    // empresas diferentes no Google Maps podem apontar para o mesmo WhatsApp.
+    if (lead.phone) {
+      if (seenPhones.has(lead.phone)) continue;
+      seenPhones.add(lead.phone);
+    } else if (lead.sourceId) {
+      if (seenSourceIds.has(lead.sourceId)) continue;
+      seenSourceIds.add(lead.sourceId);
+    } else {
+      const fallbackKey = `${normalizeText(lead.name)}|${normalizeText(lead.address)}`;
+      if (seenFallbackKeys.has(fallbackKey)) continue;
+      seenFallbackKeys.add(fallbackKey);
+    }
+
     result.push(lead);
   }
+
   return result;
 }
