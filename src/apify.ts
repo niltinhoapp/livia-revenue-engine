@@ -8,6 +8,12 @@ export interface CollectOptions {
   actor?: string;
 }
 
+export function calculatePerSearch(total: number, queryCount: number): number {
+  const safeTotal = Math.max(1, total);
+  const safeQueryCount = Math.max(1, queryCount);
+  return Math.min(15, Math.max(5, Math.ceil(safeTotal / safeQueryCount) + 2));
+}
+
 export async function collectFromApify(options: CollectOptions): Promise<RawPlace[]> {
   const token = process.env.APIFY_TOKEN;
   if (!token) throw new Error('APIFY_TOKEN não configurado.');
@@ -15,7 +21,7 @@ export async function collectFromApify(options: CollectOptions): Promise<RawPlac
   const actor = options.actor || process.env.APIFY_ACTOR || 'compass/crawler-google-places';
   const client = new ApifyClient({ token });
   const total = Math.max(1, options.maxItems ?? 100);
-  const perSearch = Math.max(1, Math.ceil(total / options.queries.length));
+  const perSearch = calculatePerSearch(total, options.queries.length);
 
   const run = await client.actor(actor).call({
     searchStringsArray: options.queries,
