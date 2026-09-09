@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Livia Revenue Engine</title>
+  <meta name="description" content="Painel interno de prospecção da ConnectWeb." />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">CONNECTWEB · REVENUE ENGINE</div>
+        <h1>Prospecção</h1>
+        <p>Encontre, qualifique e organize seus próximos clientes da Livia.</p>
+      </div>
+      <div class="status-pill"><span></span> Motor online</div>
+    </header>
+
+    <main>
+      <section class="card search-card">
+        <div class="section-heading">
+          <div>
+            <h2>Nova prospecção</h2>
+            <p>Comece por uma cidade e veja empresas com potencial para a Livia.</p>
+          </div>
+        </div>
+        <form id="search-form" class="search-form">
+          <label>
+            Cidade
+            <input id="city" name="city" value="Macatuba, SP, Brasil" placeholder="Ex.: Bauru, SP, Brasil" required />
+          </label>
+          <label>
+            Quantidade
+            <select id="max" name="max">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+            </select>
+          </label>
+          <button id="search-button" type="submit">Buscar empresas</button>
+        </form>
+        <div class="segments">
+          <span>ICP:</span>
+          <span class="tag">Barbearias</span>
+          <span class="tag">Salões</span>
+          <span class="tag">Manicure / Nail</span>
+        </div>
+        <div id="error" class="error hidden"></div>
+      </section>
+
+      <section id="summary" class="summary-grid hidden">
+        <div class="metric"><span>Encontradas</span><strong id="metric-found">0</strong></div>
+        <div class="metric"><span>Qualificadas</span><strong id="metric-qualified">0</strong></div>
+        <div class="metric"><span>Com telefone</span><strong id="metric-phone">0</strong></div>
+        <div class="metric"><span>Taxa de qualificação</span><strong id="metric-rate">0%</strong></div>
+      </section>
+
+      <section id="results" class="card results-card hidden">
+        <div class="results-header">
+          <div>
+            <h2>Leads encontrados</h2>
+            <p id="results-subtitle">Resultados da última busca.</p>
+          </div>
+          <div class="filters">
+            <select id="segment-filter" aria-label="Filtrar por segmento">
+              <option value="all">Todos os segmentos</option>
+              <option value="barbearia">Barbearias</option>
+              <option value="salao_de_beleza">Salões de beleza</option>
+              <option value="manicure_nail_designer">Manicure / Nail</option>
+            </select>
+            <select id="score-filter" aria-label="Filtrar por score">
+              <option value="0">Todos os scores</option>
+              <option value="60">Score 60+</option>
+              <option value="80">Score 80+</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Segmento</th>
+                <th>Score</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lead-table"></tbody>
+          </table>
+        </div>
+        <div id="empty" class="empty hidden">Nenhum lead corresponde aos filtros.</div>
+      </section>
+    </main>
+  </div>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <button class="close" id="drawer-close" aria-label="Fechar">×</button>
+      <div id="drawer-content"></div>
+    </div>
+  </aside>
+
+  <div id="loading" class="loading hidden"><div class="spinner"></div><span>Buscando empresas no Google Maps...</span></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
