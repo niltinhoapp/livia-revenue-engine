@@ -4,6 +4,6 @@ export const DEFAULT_QUERIES = [
   'manicure nail designer',
 ] as const;
 
-export function buildQueries(city: string): string[] {
-  return DEFAULT_QUERIES.map((segment) => `${segment} em ${city}`);
+export function buildQueries(_city: string): string[] {
+  return [...DEFAULT_QUERIES];
 }
