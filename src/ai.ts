@@ -1,11 +1,13 @@
 import OpenAI from 'openai';
 import type { Lead } from './domain.js';
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY não configurado.');
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 export async function personalizeLead(lead: Lead): Promise<string> {
-  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY não configurado.');
-
+  const client = getClient();
   const model = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
   const response = await client.responses.create({
     model,
