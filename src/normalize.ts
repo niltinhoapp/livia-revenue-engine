@@ -5,6 +5,32 @@ const clean = (value: unknown): string => String(value ?? '').trim();
 
 const normalizeText = (value: string): string => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+function normalizeWebsite(value: unknown): string | null {
+  const url = clean(value);
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+    const socialHosts = new Set([
+      'instagram.com',
+      'facebook.com',
+      'fb.com',
+      'tiktok.com',
+      'youtube.com',
+      'youtu.be',
+      'x.com',
+      'twitter.com',
+      'linkedin.com',
+    ]);
+
+    if (socialHosts.has(host)) return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 export function normalizePhone(value: unknown): string | null {
   const digits = clean(value).replace(/\D/g, '');
   if (!digits) return null;
@@ -28,7 +54,7 @@ export function normalizePlace(raw: RawPlace, now = new Date().toISOString()): L
   if (!name) return null;
   const address = clean(raw.address ?? raw.street ?? raw.fullAddress);
   const phone = normalizePhone(raw.phone ?? raw.phoneNumber ?? raw.contactPhone);
-  const website = clean(raw.website ?? raw.websiteUrl ?? raw.site) || null;
+  const website = normalizeWebsite(raw.website ?? raw.websiteUrl ?? raw.site);
   const categories = raw.categories ?? raw.categoryName ?? raw.category ?? raw.primaryCategory;
   const segment = inferSegment(name, categories);
   const city = clean(raw.city ?? raw.cityName);
