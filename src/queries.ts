@@ -1,7 +1,11 @@
 export const DEFAULT_QUERIES = [
   'barbearia',
+  'barber',
   'salão de beleza',
-  'manicure nail designer',
+  'cabeleireiro',
+  'manicure',
+  'nail designer',
+  'estética',
 ] as const;
 
 export function buildQueries(_city: string): string[] {
