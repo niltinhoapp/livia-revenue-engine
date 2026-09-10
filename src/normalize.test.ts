@@ -29,3 +29,29 @@ test('mantém site oficial quando o campo website é um domínio real', () => {
   assert.ok(lead);
   assert.equal(lead.website, 'https://www.studioenails.com/');
 });
+
+test('não usa contactPhone como telefone da empresa', () => {
+  const lead = normalizePlace({
+    title: 'Augusto Cabeleireiro',
+    address: 'Rua Teste, 456',
+    categoryName: 'Cabeleireiro',
+    contactPhone: '+55 14 98888-7777',
+  });
+
+  assert.ok(lead);
+  assert.equal(lead.phone, null);
+  assert.equal(lead.whatsapp, null);
+});
+
+test('aceita phoneUnformatted como telefone da própria empresa', () => {
+  const lead = normalizePlace({
+    title: 'Augusto Cabeleireiro',
+    address: 'Rua Teste, 456',
+    categoryName: 'Cabeleireiro',
+    phoneUnformatted: '+5514999998888',
+  });
+
+  assert.ok(lead);
+  assert.equal(lead.phone, '5514999998888');
+  assert.equal(lead.whatsapp, '5514999998888');
+});
