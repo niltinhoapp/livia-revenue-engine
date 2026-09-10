@@ -6,7 +6,7 @@
     studio_tattoo_piercing: 'Estúdios de tatuagem / Piercing', clinica_odontologica: 'Clínicas odontológicas',
     clinica_medica: 'Clínicas médicas', fisioterapia: 'Fisioterapia', psicologia: 'Psicologia', nutricao: 'Nutrição',
     fonoaudiologia: 'Fonoaudiologia', dermatologia: 'Dermatologia', oftalmologia: 'Oftalmologia', veterinaria: 'Clínicas veterinárias',
-    pet_shop: 'Pet shops', oficina_mecanica: 'Oficinas mecânicas', auto_eletrica: 'Autoelétrica',
+    pet_shop: 'Pet shops', academia: 'Academias', oficina_mecanica: 'Oficinas mecânicas', auto_eletrica: 'Autoelétrica',
     funilaria_pintura: 'Funilaria / Pintura automotiva', ar_condicionado: 'Ar-condicionado', assistencia_tecnica: 'Assistência técnica',
     empresa_limpeza: 'Empresas de limpeza', dedetizadora: 'Dedetizadoras', marcenaria: 'Marcenarias', serralheria: 'Serralherias',
     eletricista: 'Eletricistas', encanador: 'Encanadores', imobiliaria: 'Imobiliárias', corretor_imoveis: 'Corretores de imóveis',
@@ -45,7 +45,10 @@
   const syncSelectedLabel = () => {
     const select = document.getElementById('search-segment');
     const label = document.getElementById('selected-segment-label');
-    if (select && label && ICP_NAMES[select.value]) label.textContent = ICP_NAMES[select.value];
+    if (select && label && ICP_NAMES[select.value]) {
+      const next = ICP_NAMES[select.value];
+      if (label.textContent !== next) label.textContent = next;
+    }
   };
 
   const normalizeTableSegments = () => {
