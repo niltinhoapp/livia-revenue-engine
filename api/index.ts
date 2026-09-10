@@ -1,9 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { collectFromApify } from '../src/apify.js';
 import { buildQueries } from '../src/queries.js';
+import { ICP_SEGMENTS, type IcpSegment, type Lead, type RawPlace } from '../src/domain.js';
 import { dedupeLeads, normalizePlace } from '../src/normalize.js';
 import { qualifyAll } from '../src/qualify.js';
-import type { Lead, RawPlace } from '../src/domain.js';
+
+const DEFAULT_SEGMENT: IcpSegment = 'barbearia';
+
+function parseSegment(value: unknown): IcpSegment {
+  const segment = typeof value === 'string' ? value : DEFAULT_SEGMENT;
+  return (ICP_SEGMENTS as readonly string[]).includes(segment) ? segment as IcpSegment : DEFAULT_SEGMENT;
+}
 
 export default async function handler(
   req: VercelRequest,
@@ -28,11 +35,12 @@ export default async function handler(
         : 10;
 
     const max = Math.min(
-      20,
-      Math.max(1, Number.isFinite(requestedMax) ? requestedMax : 10),
+      100,
+      Math.max(10, Number.isFinite(requestedMax) ? requestedMax : 10),
     );
 
-    const queries = buildQueries(city);
+    const segment = parseSegment(req.query.segment);
+    const queries = buildQueries(city, segment);
 
     const raw = await collectFromApify({
       queries,
@@ -41,7 +49,7 @@ export default async function handler(
     });
 
     const normalized = raw
-      .map((item: RawPlace) => normalizePlace(item))
+      .map((item: RawPlace) => normalizePlace(item, undefined, segment))
       .filter((lead): lead is Lead => Boolean(lead));
 
     const leads = qualifyAll(dedupeLeads(normalized)).slice(0, max);
@@ -49,6 +57,7 @@ export default async function handler(
     return res.status(200).json({
       ok: true,
       city,
+      segment,
       requested: max,
       collected: raw.length,
       qualified: leads.filter((lead) => lead.stage === 'QUALIFICADO').length,

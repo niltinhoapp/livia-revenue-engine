@@ -2,6 +2,15 @@ export const ICP_SEGMENTS = [
   'barbearia',
   'salao_de_beleza',
   'manicure_nail_designer',
+  'clinica_odontologica',
+  'clinica_estetica',
+  'academia',
+  'pet_shop',
+  'veterinaria',
+  'restaurante',
+  'imobiliaria',
+  'oficina_mecanica',
+  'escola_curso',
 ] as const;
 
 export type IcpSegment = (typeof ICP_SEGMENTS)[number];
