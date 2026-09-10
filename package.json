@@ -7,7 +7,7 @@
   "scripts": {
     "prospect": "tsx src/cli.ts",
     "build": "tsc --noEmit",
-    "test": "tsx --test src/**/*.test.ts"
+    "test": "tsx --test src/funnel.test.ts src/normalize.test.ts src/outreach.test.ts"
   },
   "dependencies": {
     "apify-client": "^2.21.0",
