@@ -1,5 +1,6 @@
 (() => {
   const SIGNALS_STORAGE_KEY = 'liviaRevenueCommercialSignals';
+  const MAX_APPROACH_CHARS = 900;
 
   function readSignals() {
     try {
@@ -54,7 +55,7 @@
       `${opening} A gente desenvolveu a Livia, uma recepcionista virtual para WhatsApp que ajuda a cuidar do primeiro atendimento quando a equipe está ocupada ou fora do horário. ${contextLine} Hoje vocês conseguem responder rapidamente todos os clientes que chamam por lá?`,
       `Oi! Tudo certo? Aqui é da Conect Web. ${contextLine} A gente desenvolveu a Livia para ajudar empresas a organizar e agilizar o primeiro atendimento pelo WhatsApp, sem substituir a equipe. Queria saber como vocês fazem isso hoje e, se fizer sentido, te mostro rapidamente como funciona.`,
       `${opening} ${opportunityLine} A Livia foi criada justamente para apoiar esse primeiro atendimento no WhatsApp, mantendo a equipe focada no trabalho. Posso te explicar em 1 minuto como funciona e você me diz se faria sentido para a ${name}?`,
-    ].map((message) => message.slice(0, 450));
+    ].map((message) => message.slice(0, MAX_APPROACH_CHARS));
   }
 
   function applyToNewApproach() {
@@ -72,11 +73,12 @@
     const index = (variation - 1) % variations.length;
 
     textarea.value = variations[index];
+    textarea.maxLength = MAX_APPROACH_CHARS;
     textarea.dataset.signalContextApplied = 'true';
     textarea.dataset.signalContextKey = context.key;
 
     const counter = drawer.querySelector('#approach-count');
-    if (counter) counter.textContent = `${textarea.value.length}/450`;
+    if (counter) counter.textContent = `${textarea.value.length}/${MAX_APPROACH_CHARS}`;
 
     let note = drawer.querySelector('[data-approach-context-note]');
     if (!note) {
