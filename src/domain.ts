@@ -23,7 +23,8 @@ export const ICP_SEGMENTS = [
   'veterinaria',
   'pet_shop',
 
-  // Serviços locais e automotivos
+  // Fitness e serviços locais
+  'academia',
   'oficina_mecanica',
   'auto_eletrica',
   'funilaria_pintura',
