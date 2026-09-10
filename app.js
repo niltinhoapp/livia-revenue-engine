@@ -1,6 +1,7 @@
 const state = { leads: [], filtered: [], currentLeadId: null };
 
 const CONTACTED_STORAGE_KEY = 'liviaRevenueContacted';
+const PHONE_STATUS_STORAGE_KEY = 'liviaRevenuePhoneStatus';
 
 const $ = (id) => document.getElementById(id);
 const form = $('search-form');
@@ -45,6 +46,20 @@ const stageNames = {
   GANHO: 'Ganho',
   PERDIDO: 'Perdido',
   'OPT-OUT': 'Opt-out',
+};
+
+const phoneStatusNames = {
+  MISSING: 'Sem telefone',
+  NEEDS_REVIEW: 'Precisa revisar',
+  VERIFIED: 'Telefone verificado',
+  REJECTED: 'Telefone rejeitado',
+};
+
+const phoneStatusReasons = {
+  MISSING: 'O Google Maps não forneceu um telefone empresarial utilizável.',
+  NEEDS_REVIEW: 'O telefone tem estrutura válida, mas ainda precisa ser confirmado como pertencente ao estabelecimento.',
+  VERIFIED: 'O telefone foi confirmado manualmente como pertencente ao estabelecimento.',
+  REJECTED: 'O telefone foi considerado incorreto ou inválido e não deve ser usado para contato.',
 };
 
 const genericApproachTemplates = [
@@ -122,6 +137,78 @@ function markLeadContacted(id) {
   renderTable();
 }
 
+function readPhoneStatusOverrides() {
+  try {
+    const value = JSON.parse(localStorage.getItem(PHONE_STATUS_STORAGE_KEY) || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function writePhoneStatusOverrides(overrides) {
+  localStorage.setItem(PHONE_STATUS_STORAGE_KEY, JSON.stringify(overrides));
+}
+
+function getPhoneStatus(lead) {
+  const override = readPhoneStatusOverrides()[String(lead.id)];
+  return override || lead.phoneStatus || (lead.phone ? 'NEEDS_REVIEW' : 'MISSING');
+}
+
+function setPhoneStatus(lead, status) {
+  const overrides = readPhoneStatusOverrides();
+  overrides[String(lead.id)] = status;
+  writePhoneStatusOverrides(overrides);
+  lead.phoneStatus = status;
+}
+
+function canOpenWhatsApp(lead) {
+  return Boolean(lead.phone) && !lead.optOut && getPhoneStatus(lead) === 'VERIFIED';
+}
+
+function phoneStatusClass(status) {
+  return `phone-status phone-status-${String(status || '').toLowerCase()}`;
+}
+
+function renderPhoneVerification(lead) {
+  const status = getPhoneStatus(lead);
+  const hasMaps = Boolean(lead.googleMapsUrl);
+  const statusLabel = phoneStatusNames[status] || 'Status desconhecido';
+  const reason = phoneStatusReasons[status] || 'Revise os dados antes de usar o telefone.';
+
+  let actions = '';
+  if (status === 'NEEDS_REVIEW') {
+    actions = `
+      <div class="detail-actions">
+        ${hasMaps ? `<a class="secondary" href="${escapeHtml(lead.googleMapsUrl)}" target="_blank" rel="noopener noreferrer">Conferir no Maps</a>` : ''}
+        ${lead.website ? `<a class="secondary" href="${escapeHtml(lead.website)}" target="_blank" rel="noopener noreferrer">Conferir site</a>` : ''}
+        <button class="secondary" type="button" id="phone-verify">Confirmar telefone</button>
+        <button class="secondary" type="button" id="phone-reject">Reprovar telefone</button>
+      </div>
+    `;
+  } else if (status === 'VERIFIED') {
+    actions = '<div class="detail-actions"><button class="secondary" type="button" id="phone-reject">Reprovar telefone</button></div>';
+  } else if (status === 'REJECTED') {
+    actions = `
+      <div class="detail-actions">
+        ${hasMaps ? `<a class="secondary" href="${escapeHtml(lead.googleMapsUrl)}" target="_blank" rel="noopener noreferrer">Revisar no Maps</a>` : ''}
+        ${lead.website ? `<a class="secondary" href="${escapeHtml(lead.website)}" target="_blank" rel="noopener noreferrer">Revisar site</a>` : ''}
+        ${lead.phone ? '<button class="secondary" type="button" id="phone-verify">Confirmar após revisão</button>' : ''}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="detail-section">
+      <h3>Validação do telefone</h3>
+      <div class="${phoneStatusClass(status)}"><strong>${escapeHtml(statusLabel)}</strong></div>
+      <div class="muted">${escapeHtml(reason)}</div>
+      ${actions}
+      ${status !== 'VERIFIED' ? '<div class="approach-note">Somente telefone VERIFICADO libera a abertura do WhatsApp. A verificação do telefone não autoriza o envio de mensagens por si só.</div>' : '<div class="approach-note">Telefone confirmado. Ainda é necessário revisar a autorização/base adequada para o contato antes de enviar qualquer mensagem.</div>'}
+    </div>
+  `;
+}
+
 function normalizedPhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
   if (!digits) return '';
@@ -140,6 +227,8 @@ function getApproachVariations(lead) {
 function renderApproach(lead, variationIndex = 0) {
   const variations = getApproachVariations(lead);
   const index = ((variationIndex % variations.length) + variations.length) % variations.length;
+  const whatsappAllowed = canOpenWhatsApp(lead);
+  const phoneStatus = getPhoneStatus(lead);
   return `
     <div class="detail-section">
       <h3>Abordagem</h3>
@@ -151,7 +240,7 @@ function renderApproach(lead, variationIndex = 0) {
         <button class="secondary" type="button" id="approach-copy">Copiar</button>
       </div>
       <div class="detail-actions approach-actions">
-        ${lead.phone ? `<button class="primary" type="button" id="approach-whatsapp">Abrir WhatsApp</button>` : ''}
+        ${whatsappAllowed ? '<button class="primary" type="button" id="approach-whatsapp">Abrir WhatsApp</button>' : `<button class="secondary" type="button" disabled title="O telefone precisa estar VERIFICADO">WhatsApp bloqueado · ${escapeHtml(phoneStatusNames[phoneStatus] || 'telefone não verificado')}</button>`}
         <button class="secondary" type="button" id="approach-contacted">${isContacted(lead) ? 'Já está CONTATADO' : 'Marcar como CONTATADO'}</button>
       </div>
       <div class="approach-note">WhatsApp não é enviado automaticamente. Revise a mensagem antes de continuar.</div>
@@ -178,6 +267,7 @@ async function copyApproach() {
 }
 
 function openWhatsApp(lead) {
+  if (!canOpenWhatsApp(lead)) return;
   const phone = normalizedPhone(lead.phone);
   const textarea = $('approach-message');
   const message = textarea ? textarea.value.trim() : '';
@@ -278,6 +368,18 @@ function bindApproach(lead, variationIndex) {
   });
 }
 
+function bindPhoneVerification(lead) {
+  $('phone-verify')?.addEventListener('click', () => {
+    setPhoneStatus(lead, 'VERIFIED');
+    openLead(lead.id);
+  });
+
+  $('phone-reject')?.addEventListener('click', () => {
+    setPhoneStatus(lead, 'REJECTED');
+    openLead(lead.id);
+  });
+}
+
 function openLead(id) {
   const lead = state.leads.find((item) => item.id === id);
   if (!lead) return;
@@ -296,6 +398,7 @@ function openLead(id) {
       <div class="detail-item"><span>Telefone</span><strong>${escapeHtml(formatPhone(lead.phone))}</strong></div>
       <div class="detail-item"><span>Cidade</span><strong>${escapeHtml([lead.city, lead.state].filter(Boolean).join(' · ') || '—')}</strong></div>
     </div>
+    ${renderPhoneVerification(lead)}
     <div class="detail-section">
       <h3>Por que foi qualificado</h3>
       ${reasons}
@@ -313,6 +416,7 @@ function openLead(id) {
     </div>
     ${renderApproach(lead)}
   `;
+  bindPhoneVerification(lead);
   bindApproach(lead, 0);
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
