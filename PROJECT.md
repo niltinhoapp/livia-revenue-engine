@@ -26,169 +26,225 @@ Esses segmentos foram escolhidos porque normalmente possuem atendimento recorren
 
 Não expandir para novos nichos antes de obter dados suficientes desse primeiro ICP.
 
-A expansão só acontece se houver motivo comercial comprovado ou se os dados mostrarem que outro segmento tem potencial claramente superior.
-
 ## 4. Oferta comercial inicial
-
-A comunicação comercial deve vender o resultado, não a tecnologia.
-
-### Posicionamento principal
 
 > **Uma recepcionista virtual que atende seus clientes no WhatsApp enquanto você trabalha.**
 
-A Livia deve ser apresentada como uma solução para reduzir perda de oportunidades, responder clientes e organizar o primeiro atendimento.
+A comunicação deve vender o resultado e a experiência, não apenas IA.
 
-### Demonstração
+## 5. Princípios da operação
 
-Sempre que possível, o prospect deve experimentar a própria Livia. A demonstração deve mostrar o fluxo real:
+### Receita primeiro
 
-```text
-CLIENTE
-  ↓
-LIVIA
-  ↓
-ENTENDE A NECESSIDADE
-  ↓
-RESPONDE
-  ↓
-QUALIFICA
-  ↓
-ENCAMINHA / EXECUTA A PRÓXIMA AÇÃO
-```
+Toda evolução deve buscar aumentar aquisição, conversão ou eficiência comercial real.
 
-A proposta comercial e o preço serão definidos antes do primeiro lote comercial e podem ser ajustados com base nas primeiras objeções e conversões.
+### Dados antes da abordagem
 
-## 5. Estratégia
+Uma empresa encontrada não deve ser considerada automaticamente um lead pronto para contato. Primeiro validamos os dados; depois avaliamos o potencial comercial; só então liberamos a abordagem.
 
-### Inbound
+### Resposta antes de insistência
 
-A Livia atende os contatos que chegam à ConnectWeb, entende a necessidade e encaminha oportunidades reais para o responsável comercial.
+A ausência de resposta não deve gerar uma sequência automática de mensagens. A automação comercial deve se apoiar principalmente em sinais reais de resposta e interesse.
 
-### Outbound
+### IA com controle humano
 
-Uma operação enxuta encontra empresas, qualifica potenciais compradores, prepara abordagens personalizadas e conduz interessados para um contato adequado com a Livia e/ou atendimento humano.
+A IA pode conduzir o lead automaticamente até o limite configurado. O operador deve poder assumir a conversa a qualquer momento. Quando o humano assume, a IA não deve interferir até que o atendimento seja devolvido a ela.
 
-A prospecção deve respeitar LGPD, políticas do canal e requisitos de consentimento aplicáveis. O objetivo não é criar um disparador indiscriminado.
+### Independência da Livia
 
-## 6. Funil oficial
+O Revenue Engine deve evoluir sem exigir alterações na Livia ou na configuração da Meta enquanto essas alterações não forem necessárias. Se a Livia falhar, o operador precisa conseguir continuar manualmente.
+
+## 6. Arquitetura comercial aprovada
 
 ```text
-LEAD ENCONTRADO
-      ↓
-QUALIFICAÇÃO
-      ↓
-CONTATO
-      ↓
-RESPOSTA
-      ↓
-INTERESSE
-      ↓
-DEMONSTRAÇÃO
-      ↓
-PROPOSTA
-      ↓
-NEGOCIAÇÃO
-      ↓
-GANHO / PERDIDO
-```
-
-## 7. Critérios de qualificação do lead
-
-O score inicial deve ser simples e baseado em sinais observáveis:
-
-- pertence ao ICP inicial;
-- possui WhatsApp ou canal claro de atendimento;
-- possui demanda aparente por atendimento/agendamento/orçamento;
-- possui presença digital mínima;
-- aparenta ter volume de atendimento suficiente para justificar automação;
-- existe um problema que a Livia consegue demonstrar resolver.
-
-Não buscar volume por volume. Priorizar empresas com maior probabilidade de compra.
-
-## 8. Arquitetura inicial
-
-```text
-APIFY
-  ↓
-INGESTÃO DE LEADS
-  ↓
-NORMALIZAÇÃO / DEDUPLICAÇÃO
-  ↓
-QUALIFICAÇÃO
-  ↓
-BANCO / CRM
-  ↓
-IA / PERSONALIZAÇÃO
-  ↓
-CANAL DE CONTATO PERMITIDO
-  ↓
-LIVIA
-  ↓
+GOOGLE MAPS / APIFY
+        ↓
+INGESTÃO
+        ↓
+NORMALIZAÇÃO
+        ↓
+DEDUPLICAÇÃO
+        ↓
+VALIDAÇÃO DOS DADOS
+        ↓
 QUALIFICAÇÃO COMERCIAL
-  ↓
+        ↓
+IA ANALISA O CONTEXTO
+        ↓
+IA PREPARA ABORDAGEM
+        ↓
+CONTATO PERMITIDO
+        ↓
+┌─────────────────────┐
+│ NÃO RESPONDEU       │ → NÃO INSISTIR AUTOMATICAMENTE
+└─────────────────────┘
+        ↓
+RESPONDEU
+        ↓
+IA CONDUZ ATÉ LIMITE CONFIGURADO
+        ↓
+INTERESSE / SITUAÇÃO ESPECIAL
+        ↓
+HANDOFF
+        ↓
 HUMANO
-  ↓
+        ↓
 VENDA
 ```
 
-A tecnologia exata de cada etapa pode evoluir. A função comercial do fluxo não deve ser alterada sem motivo.
+## 7. Validação dos dados
 
-## 9. Fases de execução
+A validação deve ser separada do score comercial.
 
-### Fase 0 — Base
+### 7.1 Qualidade do dado
 
-- documentação;
-- definição do escopo;
-- definição dos estados do CRM;
-- definição das métricas;
-- definição do ICP inicial;
-- definição da oferta;
-- definição do roteiro de demonstração.
+Verificar, quando disponível:
 
-### Fase 1 — Livia na ConnectWeb
+- nome da empresa;
+- segmento;
+- cidade;
+- endereço;
+- telefone da própria empresa;
+- site;
+- link do Google Maps;
+- avaliações;
+- presença digital;
+- consistência entre fontes.
 
-- colocar a Livia para receber contatos reais;
-- configurar contexto comercial da ConnectWeb;
-- definir critérios de qualificação;
-- criar handoff para humano;
-- registrar resultados.
+### 7.2 Telefone
 
-### Fase 2 — Prospecção MVP
+A existência de um telefone não prova que ele pertence à empresa.
 
-- coletar empresas dos três segmentos iniciais;
-- normalizar dados;
-- remover duplicados;
-- aplicar qualificação;
-- gerar abordagem personalizada;
-- registrar contatos e respostas;
-- conduzir interessados para a Livia/humano.
+O sistema deve evoluir para registrar confiança do telefone, por exemplo:
 
-### Fase 3 — Validação
+```text
+CONFIRMADO
+PRECISA_REVISÃO
+INCONSISTENTE
+AUSENTE
+```
 
-Começar com aproximadamente 100 empresas.
+Telefone inconsistente ou não confiável não deve liberar automaticamente a ação de WhatsApp.
 
-Medir:
+O sistema nunca deve substituir o telefone oficial da empresa por um telefone de contato/enriquecimento sem evidência suficiente.
 
-- taxa de resposta;
-- taxa de interesse;
-- demonstrações;
-- propostas;
-- vendas;
-- principais objeções;
-- segmento com melhor conversão.
+### 7.3 Revisão manual
 
-### Fase 4 — Escala
+Quando houver dúvida, o lead deve continuar disponível para revisão humana, com o link da fonte preservado.
 
-Somente após validação:
+## 8. Qualificação comercial
 
-- aumentar para 500 empresas/mês;
-- depois 1.000 empresas/mês;
-- automatizar tarefas repetitivas comprovadamente úteis;
-- otimizar os pontos de maior perda do funil.
+O score é um **índice de prioridade**, não uma porcentagem de chance de venda.
 
-## 10. CRM mínimo
+A qualificação deve considerar sinais observáveis, como:
 
-Estados oficiais:
+- pertencimento ao ICP;
+- canal de atendimento disponível;
+- presença digital;
+- sinais de volume de atendimento;
+- avaliações e reputação;
+- necessidade provável de atendimento/agendamento/orçamento;
+- capacidade da Livia de resolver ou demonstrar o problema.
+
+A regra de aprovação pode evoluir conforme dados reais forem coletados.
+
+## 9. IA de abordagem
+
+A IA deve receber somente contexto confiável e criar uma abordagem curta, humana e personalizada.
+
+### Regras
+
+- usar dados reais;
+- não inventar fatos;
+- não prometer resultados não comprovados;
+- não usar falsa urgência;
+- não pressionar;
+- não repetir automaticamente a abordagem diante do silêncio;
+- adaptar o texto ao segmento e contexto;
+- registrar a versão utilizada para medir conversão.
+
+### Modelo
+
+Para geração de abordagem e raciocínio comercial, priorizar modelo de alta capacidade da OpenAI. Modelos menores podem ser utilizados em tarefas simples e de alto volume quando isso não comprometer qualidade ou conversão.
+
+## 10. Conversação orientada por resposta
+
+O comportamento desejado é:
+
+```text
+PRIMEIRO CONTATO
+      ↓
+SEM RESPOSTA → PARAR
+      ↓
+RESPONDEU
+      ↓
+IA INTERPRETA
+      ↓
+IA RESPONDE
+      ↓
+INTERESSE?
+   ↙       ↘
+ NÃO       SIM
+ ↓          ↓
+CONTINUA   DEMONSTRAÇÃO / PRÓXIMA AÇÃO
+CONTEXTO             ↓
+                  HUMANO
+```
+
+Não criar cadências agressivas de follow-up sem resposta.
+
+## 11. Controle IA ↔ Humano
+
+Estados operacionais:
+
+```text
+IA_ATIVA
+AGUARDANDO_HUMANO
+HUMANO_ATIVO
+DEVOLVIDO_PARA_IA
+ENCERRADO
+OPT_OUT
+```
+
+### IA_ATIVA
+
+A IA pode responder e conduzir o lead dentro das regras definidas.
+
+### AGUARDANDO_HUMANO
+
+A conversa possui intenção comercial, objeção, solicitação especial ou situação que exige intervenção.
+
+### HUMANO_ATIVO
+
+O operador assumiu. A IA não envia nem interfere na conversa.
+
+### DEVOLVIDO_PARA_IA
+
+O operador libera novamente a automação.
+
+### ENCERRADO
+
+A conversa não possui próxima ação comercial.
+
+### OPT_OUT
+
+O contato não deve receber novas abordagens automatizadas.
+
+## 12. Handoff
+
+Quando houver intenção comercial suficiente, a IA deve entregar ao humano um resumo mínimo:
+
+- empresa;
+- nome do contato, quando disponível;
+- necessidade;
+- contexto da conversa;
+- interesse identificado;
+- objeções;
+- próxima ação sugerida.
+
+Se a Livia estiver indisponível ou falhar, o operador deve conseguir assumir manualmente usando o histórico existente.
+
+## 13. Funil oficial
 
 ```text
 NOVO
@@ -204,71 +260,120 @@ PERDIDO
 OPT-OUT
 ```
 
-## 11. Handoff humano
+As transições são controladas por código.
 
-Quando houver intenção comercial suficiente, a Livia deve parar de tentar resolver tudo sozinha e entregar a conversa ao humano.
+## 14. Estratégia
 
-O handoff deve preservar, no mínimo:
+### Inbound
 
-- nome;
-- empresa;
-- motivo do contato;
-- necessidade identificada;
-- nível de interesse;
-- informações relevantes coletadas.
+A Livia atende contatos que chegam à ConnectWeb, entende a necessidade e encaminha oportunidades reais.
 
-## 12. Métricas mínimas
+### Outbound
 
-```text
-Empresas encontradas
-Empresas qualificadas
-Contatos realizados
-Respostas
-Interessados
-Demonstrações
-Propostas
-Clientes ganhos
-Clientes perdidos
-Receita
-Custo de aquisição
-Conversão por segmento
-Principais objeções
-```
+O Revenue Engine encontra empresas, valida dados, qualifica potenciais compradores, prepara abordagens personalizadas e conduz **somente os contatos permitidos e que respondem** para a próxima etapa.
 
-A métrica mais importante da fase é **clientes pagantes e receita gerada**.
+A operação deve respeitar LGPD, regras do canal, base legal/consentimento aplicável e OPT-OUT.
 
-## 13. Definition of Done — Fase Receita
+## 15. Fases de execução
+
+### Fase 0 — Base
+
+- documentação;
+- escopo;
+- estados do CRM;
+- métricas;
+- ICP;
+- oferta;
+- roteiro de demonstração.
+
+### Fase 1 — Qualidade dos dados
+
+- validar telefone da própria empresa;
+- detectar inconsistências;
+- registrar confiança;
+- bloquear contato quando necessário;
+- preservar fontes para revisão.
+
+### Fase 2 — IA de abordagem
+
+- analisar contexto;
+- escolher ângulo comercial;
+- gerar abordagem personalizada;
+- registrar versão;
+- medir resposta por abordagem e segmento.
+
+### Fase 3 — Conversação
+
+- processar respostas;
+- permitir condução automática até limite configurado;
+- detectar interesse e objeções;
+- acionar handoff;
+- permitir assumir e devolver a conversa.
+
+### Fase 4 — Validação comercial
+
+Começar com aproximadamente 100 empresas.
+
+Medir:
+
+- dados válidos;
+- telefones confiáveis;
+- contatos realizados;
+- respostas;
+- interessados;
+- demonstrações;
+- propostas;
+- vendas;
+- receita;
+- objeções;
+- conversão por segmento;
+- conversão por abordagem;
+- conversão por etapa da IA.
+
+### Fase 5 — Escala
+
+Somente após validação:
+
+- 500 empresas/mês;
+- depois 1.000 empresas/mês;
+- automatizar tarefas repetitivas comprovadamente úteis;
+- otimizar os pontos de maior perda.
+
+## 16. Definition of Done — Fase Receita
 
 A fase está pronta quando:
 
-- a ConnectWeb recebe atendimento inicial pela Livia;
-- leads podem entrar no funil;
-- empresas podem ser qualificadas;
-- o processo comercial pode ser acompanhado;
+- empresas podem ser encontradas e normalizadas;
+- dados críticos podem ser validados;
+- leads podem ser qualificados;
+- abordagens podem ser geradas com IA;
+- não há disparo indiscriminado;
+- respostas podem alimentar a conversa;
+- a IA pode conduzir dentro de limites configuráveis;
+- o humano pode assumir a qualquer momento;
+- o humano pode continuar mesmo se a Livia falhar;
 - interessados são encaminhados corretamente;
-- é possível registrar propostas e vendas;
-- as métricas básicas estão disponíveis;
+- propostas e vendas podem ser registradas;
+- métricas reais permitem decidir o próximo investimento;
 - existe pelo menos um fluxo real de aquisição sendo executado;
-- existe pelo menos um cliente pagante real ou dados suficientes para uma decisão clara de ajuste;
-- a operação consegue gerar e medir oportunidades comerciais reais.
+- existe pelo menos um cliente pagante real ou dados suficientes para uma decisão clara de ajuste.
 
-## 14. Backlog futuro
+## 17. Backlog futuro
 
 Somente depois da validação comercial:
 
-- otimizações avançadas de scoring;
+- scoring avançado;
+- validação externa automatizada de telefones;
 - novos canais;
 - novos segmentos;
 - analytics avançado;
 - automações adicionais;
-- recursos avançados de CRM;
-- melhorias de IA;
+- CRM avançado;
+- memória comercial avançada;
 - experimentos de conversão.
 
 **Backlog não é escopo atual.**
 
-## 15. Regra definitiva do projeto
+## 18. Regra definitiva
 
-> **Foco em receita. Primeiro vender. Depois melhorar com base nos dados reais.**
-
-Nenhuma funcionalidade entra apenas porque parece interessante. Ela precisa aumentar aquisição, conversão, eficiência operacional, reduzir CAC ou atender uma necessidade real de segurança/compliance.
+> **Primeiro vender. Depois melhorar com base em dados reais.**
