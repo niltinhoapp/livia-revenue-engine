@@ -36,24 +36,24 @@
   }
 
   function buildVariations(name, context) {
-    const presence = context.hasMaps
-      ? `Vi a ${name} no Google e queria te fazer uma pergunta rápida.`
-      : `Encontrei a ${name} e queria te fazer uma pergunta rápida.`;
+    const opening = context.hasMaps
+      ? `Oi, tudo bem? Aqui é da Conect Web. Vi a ${name} no Google e entrei em contato porque estamos conversando com alguns negócios sobre atendimento pelo WhatsApp.`
+      : `Oi, tudo bem? Aqui é da Conect Web. Encontrei a ${name} e entrei em contato porque estamos conversando com alguns negócios sobre atendimento pelo WhatsApp.`;
 
-    const digital = context.hasWebsite
-      ? 'Vi que vocês também têm site.'
-      : 'Queria entender como vocês estão cuidando do atendimento online.';
+    const contextLine = context.hasWebsite
+      ? 'Vi que vocês já têm uma presença digital estruturada e queria entender como o atendimento acompanha as oportunidades que chegam pelo WhatsApp.'
+      : 'Queria entender como vocês estão cuidando hoje das mensagens que chegam pelo WhatsApp, principalmente quando a equipe está ocupada.';
 
-    const traffic = context.paidTraffic === 'YES'
-      ? 'Como vocês já trabalham a divulgação, queria entender se o WhatsApp consegue acompanhar as oportunidades que chegam.'
+    const opportunityLine = context.paidTraffic === 'YES'
+      ? 'Quando existe divulgação, uma parte importante é conseguir acompanhar bem os contatos que chegam.'
       : context.paidTraffic === 'NO'
-        ? 'Talvez exista uma oportunidade simples de melhorar o atendimento antes mesmo de investir mais em divulgação.'
-        : 'Queria entender se hoje vocês conseguem atender rapidamente quem chama no WhatsApp quando a equipe está ocupada.';
+        ? 'Antes de pensar em aumentar a divulgação, muitas empresas acabam encontrando oportunidades de melhoria no próprio atendimento.'
+        : 'Em muitos negócios, algumas oportunidades acabam ficando sem resposta justamente nos horários mais corridos.';
 
     return [
-      `${presence} Hoje vocês conseguem responder todos os clientes que chamam pelo WhatsApp, mesmo nos horários mais corridos? A Livia é uma recepcionista virtual para esse primeiro atendimento. Se fizer sentido, posso te mostrar como funciona.`,
-      `Oi! Tudo certo? ${digital} Quando chegam mensagens enquanto vocês estão atendendo, alguém consegue responder todos os clientes? A Livia ajuda justamente nesse primeiro atendimento. Posso te mostrar rapidamente como funciona?`,
-      `Oi! Tudo bem? ${traffic} A Livia pode cuidar desse primeiro atendimento no WhatsApp enquanto vocês trabalham. Se quiser, te mostro sem compromisso.`,
+      `${opening} A gente desenvolveu a Livia, uma recepcionista virtual para WhatsApp que ajuda a cuidar do primeiro atendimento quando a equipe está ocupada ou fora do horário. ${contextLine} Hoje vocês conseguem responder rapidamente todos os clientes que chamam por lá?`,
+      `Oi! Tudo certo? Aqui é da Conect Web. ${contextLine} A gente desenvolveu a Livia para ajudar empresas a organizar e agilizar o primeiro atendimento pelo WhatsApp, sem substituir a equipe. Queria saber como vocês fazem isso hoje e, se fizer sentido, te mostro rapidamente como funciona.`,
+      `${opening} ${opportunityLine} A Livia foi criada justamente para apoiar esse primeiro atendimento no WhatsApp, mantendo a equipe focada no trabalho. Posso te explicar em 1 minuto como funciona e você me diz se faria sentido para a ${name}?`,
     ].map((message) => message.slice(0, 450));
   }
 
@@ -83,7 +83,7 @@
       note = document.createElement('div');
       note.className = 'approach-note';
       note.dataset.approachContextNote = 'true';
-      note.textContent = 'Abordagem ajustada com os sinais comerciais disponíveis. Revise antes de enviar.';
+      note.textContent = 'Abordagem profissional ajustada com os sinais comerciais disponíveis. Revise antes de enviar.';
       textarea.parentElement?.appendChild(note);
     }
   }
