@@ -1,16 +1,78 @@
 export const ICP_SEGMENTS = [
+  // Beleza e bem-estar
   'barbearia',
   'salao_de_beleza',
   'manicure_nail_designer',
-  'clinica_odontologica',
   'clinica_estetica',
-  'academia',
-  'pet_shop',
+  'depilacao',
+  'lash_designer',
+  'sobrancelhas_micropigmentacao',
+  'massoterapia',
+  'spa',
+  'studio_tattoo_piercing',
+
+  // Saúde
+  'clinica_odontologica',
+  'clinica_medica',
+  'fisioterapia',
+  'psicologia',
+  'nutricao',
+  'fonoaudiologia',
+  'dermatologia',
+  'oftalmologia',
   'veterinaria',
-  'restaurante',
-  'imobiliaria',
+  'pet_shop',
+
+  // Serviços locais e automotivos
   'oficina_mecanica',
+  'auto_eletrica',
+  'funilaria_pintura',
+  'ar_condicionado',
+  'assistencia_tecnica',
+  'empresa_limpeza',
+  'dedetizadora',
+  'marcenaria',
+  'serralheria',
+  'eletricista',
+  'encanador',
+
+  // Casa, construção e imóveis
+  'imobiliaria',
+  'corretor_imoveis',
+  'arquitetura',
+  'engenharia',
+  'moveis_planejados',
+  'vidracaria',
+  'marmoraria',
+  'empresa_reformas',
+  'material_construcao',
+
+  // Educação
   'escola_curso',
+  'curso_idiomas',
+  'curso_profissionalizante',
+  'autoescola',
+  'reforco_escolar',
+  'curso_preparatorio',
+
+  // Comércio
+  'loja_roupas',
+  'loja_calcados',
+  'otica',
+  'loja_moveis',
+  'loja_eletronicos',
+  'loja_celulares',
+  'loja_cosmeticos',
+
+  // Alimentação
+  'restaurante',
+  'pizzaria',
+  'hamburgueria',
+  'lanchonete',
+  'cafeteria',
+  'padaria',
+  'doceria',
+  'marmitaria',
 ] as const;
 
 export type IcpSegment = (typeof ICP_SEGMENTS)[number];
