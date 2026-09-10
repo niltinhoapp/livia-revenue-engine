@@ -9,9 +9,12 @@ export function qualifyLead(lead: Lead): Lead {
     reasons.push('segmento dentro do ICP');
   }
 
-  if (lead.phone) {
+  if (lead.phoneStatus === 'VERIFIED') {
     score += 25;
-    reasons.push('telefone disponível');
+    reasons.push('telefone validado');
+  } else if (lead.phoneStatus === 'NEEDS_REVIEW') {
+    score += 15;
+    reasons.push('telefone encontrado, mas precisa validação');
   }
 
   if (lead.website) {
