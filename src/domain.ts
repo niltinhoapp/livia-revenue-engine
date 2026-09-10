@@ -31,6 +31,9 @@ export const PIPELINE_STAGES = [
 
 export type PipelineStage = (typeof PIPELINE_STAGES)[number];
 
+export const PHONE_STATUSES = ['MISSING', 'NEEDS_REVIEW', 'VERIFIED', 'REJECTED'] as const;
+export type PhoneStatus = (typeof PHONE_STATUSES)[number];
+
 export interface Lead {
   id: string;
   name: string;
@@ -41,12 +44,15 @@ export interface Lead {
   address: string;
   phone: string | null;
   whatsapp: string | null;
+  phoneStatus: PhoneStatus;
   website: string | null;
   googleMapsUrl: string | null;
   rating: number | null;
   reviews: number | null;
   source: 'apify' | 'manual' | 'import';
   sourceId: string | null;
+  dataQualityScore: number;
+  dataQualityReasons: string[];
   score: number;
   scoreReasons: string[];
   stage: PipelineStage;
