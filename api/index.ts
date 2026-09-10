@@ -17,7 +17,6 @@ function parseSegment(value: unknown): IcpSegment {
 }
 
 function isDemoRequest(req: VercelRequest): boolean {
-  if (req.cookies?.[DEMO_COOKIE] === DEMO_MARKER) return true;
   const referer = typeof req.headers.referer === 'string' ? req.headers.referer : '';
   try {
     return new URL(referer).searchParams.get('demo') === '1';
