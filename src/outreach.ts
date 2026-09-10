@@ -14,8 +14,8 @@ export interface OutreachItem {
 
 /**
  * Builds a reviewable outreach queue. It intentionally does not send messages.
- * Sending must happen only through a channel and process that satisfies the
- * applicable consent, legal-basis, platform-policy and opt-out requirements.
+ * A phone must be structurally valid and manually/independently verified
+ * before WhatsApp contact can be considered ready.
  */
 export function buildOutreachQueue(leads: Lead[]): OutreachItem[] {
   return leads
@@ -24,56 +24,48 @@ export function buildOutreachQueue(leads: Lead[]): OutreachItem[] {
     .map((lead) => {
       if (lead.optOut) {
         return {
-          leadId: lead.id,
-          company: lead.name,
-          segment: lead.segment,
-          phone: lead.phone,
-          message: lead.personalizedMessage,
-          stage: lead.stage,
-          score: lead.score,
-          eligible: false,
-          reason: 'OPT-OUT registrado',
+          leadId: lead.id, company: lead.name, segment: lead.segment, phone: lead.phone,
+          message: lead.personalizedMessage, stage: lead.stage, score: lead.score,
+          eligible: false, reason: 'OPT-OUT registrado',
         };
       }
 
       if (!lead.phone) {
         return {
-          leadId: lead.id,
-          company: lead.name,
-          segment: lead.segment,
-          phone: null,
-          message: lead.personalizedMessage,
-          stage: lead.stage,
-          score: lead.score,
-          eligible: false,
-          reason: 'sem telefone',
+          leadId: lead.id, company: lead.name, segment: lead.segment, phone: null,
+          message: lead.personalizedMessage, stage: lead.stage, score: lead.score,
+          eligible: false, reason: 'sem telefone',
+        };
+      }
+
+      if (lead.phoneStatus === 'REJECTED') {
+        return {
+          leadId: lead.id, company: lead.name, segment: lead.segment, phone: null,
+          message: lead.personalizedMessage, stage: lead.stage, score: lead.score,
+          eligible: false, reason: 'telefone rejeitado por validação estrutural',
+        };
+      }
+
+      if (lead.phoneStatus !== 'VERIFIED') {
+        return {
+          leadId: lead.id, company: lead.name, segment: lead.segment, phone: lead.phone,
+          message: lead.personalizedMessage, stage: lead.stage, score: lead.score,
+          eligible: false, reason: 'telefone encontrado, mas ainda não verificado',
         };
       }
 
       if (!lead.personalizedMessage) {
         return {
-          leadId: lead.id,
-          company: lead.name,
-          segment: lead.segment,
-          phone: lead.phone,
-          message: null,
-          stage: lead.stage,
-          score: lead.score,
-          eligible: false,
-          reason: 'mensagem ainda não personalizada',
+          leadId: lead.id, company: lead.name, segment: lead.segment, phone: lead.phone,
+          message: null, stage: lead.stage, score: lead.score,
+          eligible: false, reason: 'mensagem ainda não personalizada',
         };
       }
 
       return {
-        leadId: lead.id,
-        company: lead.name,
-        segment: lead.segment,
-        phone: lead.phone,
-        message: lead.personalizedMessage,
-        stage: lead.stage,
-        score: lead.score,
-        eligible: false,
-        reason: 'aguardando validação do canal e autorização de contato',
+        leadId: lead.id, company: lead.name, segment: lead.segment, phone: lead.phone,
+        message: lead.personalizedMessage, stage: lead.stage, score: lead.score,
+        eligible: false, reason: 'aguardando validação do canal e autorização de contato',
       };
     });
 }
