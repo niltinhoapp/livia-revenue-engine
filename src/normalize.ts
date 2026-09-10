@@ -38,12 +38,12 @@ export function normalizePhone(value: unknown): string | null {
 }
 
 /**
- * Accept only phone fields that represent the place/business itself.
- * Generic contact/enrichment fields are intentionally ignored because they
- * can belong to another entity and create an unsafe company -> phone link.
+ * Accept only the place/business phone fields exposed by the Google Maps
+ * scraper. Do not fall back to generic contact/enrichment fields: those can
+ * belong to another person/company and create an unsafe lead association.
  */
 function extractBusinessPhone(raw: RawPlace): string | null {
-  return normalizePhone(raw.phone ?? raw.phoneNumber ?? raw.phoneUnformatted);
+  return normalizePhone(raw.phone ?? raw.phoneUnformatted);
 }
 
 export function inferSegment(name: string, categories: unknown): IcpSegment | null {
