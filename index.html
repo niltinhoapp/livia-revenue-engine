@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Livia Revenue Engine</title>
-  <meta name="description" content="Painel interno de prospecção da ConnectWeb." />
+  <meta name="description" content="Painel interno de prospecção da ConectWeb." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -18,16 +18,10 @@
         <div class="brand-text"><strong>Livia</strong><span>Revenue Engine</span></div>
       </div>
       <nav class="sidebar-nav">
-        <button class="nav-item active" type="button" data-view="prospeccao">
-          <span class="nav-ico">◎</span> Prospecção
-        </button>
-        <button class="nav-item" type="button" data-view="pipeline">
-          <span class="nav-ico">▤</span> Pipeline
-        </button>
+        <button class="nav-item active" type="button" data-view="prospeccao"><span class="nav-ico">◎</span> Prospecção</button>
+        <button class="nav-item" type="button" data-view="pipeline"><span class="nav-ico">▤</span> Pipeline</button>
       </nav>
-      <div class="sidebar-foot">
-        <span class="sidebar-version">v0.1 · uso interno</span>
-      </div>
+      <div class="sidebar-foot"><span class="sidebar-version">v0.1 · uso interno</span></div>
     </aside>
 
     <div class="app-main">
@@ -37,66 +31,26 @@
           <h1 id="view-title">Prospecção</h1>
           <p id="view-subtitle">Encontre, qualifique e organize seus próximos clientes da Livia.</p>
         </div>
-        <div class="topbar-actions">
-          <div class="status-pill"><span></span> Online</div>
-        </div>
+        <div class="topbar-actions"><div class="status-pill"><span></span> Online</div></div>
       </header>
 
       <main class="content">
-        <!-- ===== VIEW: PROSPECÇÃO ===== -->
         <div class="view active" id="view-prospeccao">
           <section class="card search-card">
-            <div class="section-heading">
-              <div>
-                <h2>Nova prospecção</h2>
-                <p>Escolha o nicho, a cidade e quantas empresas deseja buscar.</p>
-              </div>
-            </div>
+            <div class="section-heading"><div><h2>Nova prospecção</h2><p>Escolha o nicho, a cidade e quantas empresas deseja buscar.</p></div></div>
             <form id="search-form" class="search-form">
-              <label>
-                ICP / Segmento
+              <label>ICP / Segmento
                 <select id="search-segment" name="segment">
-                  <option value="barbearia">Barbearias</option>
-                  <option value="salao_de_beleza">Salões de beleza</option>
-                  <option value="manicure_nail_designer">Manicure / Nail Designer</option>
-                  <option value="clinica_odontologica">Clínicas odontológicas</option>
-                  <option value="clinica_estetica">Clínicas de estética</option>
-                  <option value="academia">Academias</option>
-                  <option value="pet_shop">Pet shops</option>
-                  <option value="veterinaria">Clínicas veterinárias</option>
-                  <option value="restaurante">Restaurantes</option>
-                  <option value="imobiliaria">Imobiliárias</option>
-                  <option value="oficina_mecanica">Oficinas mecânicas</option>
-                  <option value="escola_curso">Escolas / Cursos</option>
+                  <option value="barbearia">Barbearias</option><option value="salao_de_beleza">Salões de beleza</option><option value="manicure_nail_designer">Manicure / Nail Designer</option><option value="clinica_odontologica">Clínicas odontológicas</option><option value="clinica_estetica">Clínicas de estética</option><option value="academia">Academias</option><option value="pet_shop">Pet shops</option><option value="veterinaria">Clínicas veterinárias</option><option value="restaurante">Restaurantes</option><option value="imobiliaria">Imobiliárias</option><option value="oficina_mecanica">Oficinas mecânicas</option><option value="escola_curso">Escolas / Cursos</option>
                 </select>
               </label>
-              <label>
-                Cidade
-                <input id="city" name="city" value="Macatuba, SP, Brasil" placeholder="Ex.: Bauru, SP, Brasil" required />
-              </label>
-              <label>
-                Quantidade
-                <select id="max" name="max">
-                  <option value="10" selected>10</option>
-                  <option value="20">20</option>
-                  <option value="30">30</option>
-                  <option value="40">40</option>
-                  <option value="50">50</option>
-                  <option value="60">60</option>
-                  <option value="70">70</option>
-                  <option value="80">80</option>
-                  <option value="90">90</option>
-                  <option value="100">100</option>
-                </select>
+              <label>Cidade<input id="city" name="city" value="Macatuba, SP, Brasil" placeholder="Ex.: Bauru, SP, Brasil" required /></label>
+              <label>Quantidade
+                <select id="max" name="max"><option value="10" selected>10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="70">70</option><option value="80">80</option><option value="90">90</option><option value="100">100</option></select>
               </label>
               <button id="search-button" type="submit">Buscar empresas</button>
             </form>
-            <div class="segments">
-              <span>Busca atual:</span>
-              <span class="tag" id="selected-segment-label">Barbearias</span>
-              <span class="tag">Google Maps</span>
-              <span class="tag">Busca direcionada</span>
-            </div>
+            <div class="segments"><span>Busca atual:</span><span class="tag" id="selected-segment-label">Barbearias</span><span class="tag">Google Maps</span><span class="tag">Busca direcionada</span></div>
             <div id="error" class="error hidden"></div>
           </section>
 
@@ -108,62 +62,15 @@
           </section>
 
           <section id="results" class="card results-card hidden">
-            <div class="results-header">
-              <div>
-                <h2>Leads encontrados</h2>
-                <p id="results-subtitle">Resultados da última busca.</p>
-              </div>
-              <div class="filters">
-                <select id="segment-filter" aria-label="Filtrar por segmento">
-                  <option value="all">Todos os segmentos</option>
-                  <option value="barbearia">Barbearias</option>
-                  <option value="salao_de_beleza">Salões de beleza</option>
-                  <option value="manicure_nail_designer">Manicure / Nail Designer</option>
-                  <option value="clinica_odontologica">Clínicas odontológicas</option>
-                  <option value="clinica_estetica">Clínicas de estética</option>
-                  <option value="academia">Academias</option>
-                  <option value="pet_shop">Pet shops</option>
-                  <option value="veterinaria">Clínicas veterinárias</option>
-                  <option value="restaurante">Restaurantes</option>
-                  <option value="imobiliaria">Imobiliárias</option>
-                  <option value="oficina_mecanica">Oficinas mecânicas</option>
-                  <option value="escola_curso">Escolas / Cursos</option>
-                </select>
-                <select id="score-filter" aria-label="Filtrar por score">
-                  <option value="0">Todos os scores</option>
-                  <option value="60">Score 60+</option>
-                  <option value="80">Score 80+</option>
-                </select>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Empresa</th>
-                    <th>Segmento</th>
-                    <th>Score</th>
-                    <th>Telefone</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="lead-table"></tbody>
-              </table>
-            </div>
+            <div class="results-header"><div><h2>Leads encontrados</h2><p id="results-subtitle">Resultados da última busca.</p></div><div class="filters"><select id="segment-filter" aria-label="Filtrar por segmento"><option value="all">Todos os segmentos</option><option value="barbearia">Barbearias</option><option value="salao_de_beleza">Salões de beleza</option><option value="manicure_nail_designer">Manicure / Nail Designer</option><option value="clinica_odontologica">Clínicas odontológicas</option><option value="clinica_estetica">Clínicas de estética</option><option value="academia">Academias</option><option value="pet_shop">Pet shops</option><option value="veterinaria">Clínicas veterinárias</option><option value="restaurante">Restaurantes</option><option value="imobiliaria">Imobiliárias</option><option value="oficina_mecanica">Oficinas mecânicas</option><option value="escola_curso">Escolas / Cursos</option></select><select id="score-filter" aria-label="Filtrar por score"><option value="0">Todos os scores</option><option value="60">Score 60+</option><option value="80">Score 80+</option></select></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Empresa</th><th>Segmento</th><th>Score</th><th>Telefone</th><th>Status</th><th></th></tr></thead><tbody id="lead-table"></tbody></table></div>
             <div id="empty" class="empty hidden">Nenhum lead corresponde aos filtros.</div>
           </section>
         </div>
 
-        <!-- ===== VIEW: PIPELINE ===== -->
         <div class="view" id="view-pipeline">
           <section class="card pipeline-card">
-            <div class="section-heading">
-              <div>
-                <h2>Pipeline de prospecção</h2>
-                <p>Leads da última busca organizados por estágio do funil (visualização somente leitura).</p>
-              </div>
-            </div>
+            <div class="section-heading"><div><h2>Pipeline de prospecção</h2><p>Leads da última busca organizados por estágio do funil.</p></div></div>
             <div id="pipeline-empty" class="empty">Faça uma busca em <strong>Prospecção</strong> para visualizar o funil.</div>
             <div class="kanban" id="pipeline-board"></div>
           </section>
@@ -172,14 +79,7 @@
     </div>
   </div>
 
-  <aside id="drawer" class="drawer" aria-hidden="true">
-    <div class="drawer-backdrop" id="drawer-backdrop"></div>
-    <div class="drawer-panel">
-      <button class="close" id="drawer-close" aria-label="Fechar">×</button>
-      <div id="drawer-content"></div>
-    </div>
-  </aside>
-
+  <aside id="drawer" class="drawer" aria-hidden="true"><div class="drawer-backdrop" id="drawer-backdrop"></div><div class="drawer-panel"><button class="close" id="drawer-close" aria-label="Fechar">×</button><div id="drawer-content"></div></div></aside>
   <div id="loading" class="loading hidden"><div class="spinner"></div><span>Buscando empresas no Google Maps...</span></div>
 
   <script src="/app.js" defer></script>
@@ -189,5 +89,6 @@
   <script src="/automation-ui.js" defer></script>
   <script src="/approach-signals.js" defer></script>
   <script src="/pipeline.js" defer></script>
+  <script src="/revenue-ux.js" defer></script>
 </body>
 </html>
