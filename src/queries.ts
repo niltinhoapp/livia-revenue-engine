@@ -25,7 +25,8 @@ export const SEGMENT_QUERIES: Record<IcpSegment, readonly string[]> = {
   veterinaria: ['veterinário', 'clínica veterinária', 'hospital veterinário'],
   pet_shop: ['pet shop', 'loja de animais', 'pet center'],
 
-  // Serviços locais e automotivos
+  // Fitness e serviços locais
+  academia: ['academia', 'fitness', 'musculação'],
   oficina_mecanica: ['oficina mecânica', 'auto center', 'mecânica automotiva'],
   auto_eletrica: ['auto elétrica', 'autoeletrica', 'elétrica automotiva'],
   funilaria_pintura: ['funilaria e pintura', 'funilaria', 'pintura automotiva'],
