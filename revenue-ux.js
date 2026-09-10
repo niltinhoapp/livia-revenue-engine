@@ -66,10 +66,27 @@
     drawerContent.prepend(section);
   }
 
-  const observer = new MutationObserver(() => {
+  const resultsObserver = new MutationObserver(() => {
     refreshResultsUx();
-    addOpportunityReason();
   });
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'aria-hidden'] });
+  resultsObserver.observe(results, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class']
+  });
+
+  if (drawer) {
+    const drawerObserver = new MutationObserver(() => {
+      addOpportunityReason();
+    });
+    drawerObserver.observe(drawer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-hidden']
+    });
+  }
+
   refreshResultsUx();
 })();
