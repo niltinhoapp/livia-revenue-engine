@@ -37,13 +37,22 @@ export function normalizePhone(value: unknown): string | null {
   return digits.startsWith('55') ? digits : `55${digits}`;
 }
 
+/**
+ * Accept only phone fields that represent the place/business itself.
+ * Generic contact/enrichment fields are intentionally ignored because they
+ * can belong to another entity and create an unsafe company -> phone link.
+ */
+function extractBusinessPhone(raw: RawPlace): string | null {
+  return normalizePhone(raw.phone ?? raw.phoneNumber ?? raw.phoneUnformatted);
+}
+
 export function inferSegment(name: string, categories: unknown): IcpSegment | null {
   const haystack = normalizeText(`${name} ${Array.isArray(categories) ? categories.join(' ') : clean(categories)}`);
   if (/barbear|barber/.test(haystack)) return 'barbearia';
   if (/manicure|nail|unha|nails|pedicure/.test(haystack)) return 'manicure_nail_designer';
   if (/odont|dentist|dentista/.test(haystack)) return 'clinica_odontologica';
-  if (/veterin|pet shop|petshop|animais/.test(haystack)) return 'veterinaria';
   if (/pet shop|petshop|pet center|loja de animais/.test(haystack)) return 'pet_shop';
+  if (/veterin/.test(haystack)) return 'veterinaria';
   if (/imobili|corretor.*imove|imoveis/.test(haystack)) return 'imobiliaria';
   if (/oficina|auto center|mecanica|mecanico/.test(haystack)) return 'oficina_mecanica';
   if (/academia|fitness|musculacao/.test(haystack)) return 'academia';
@@ -61,7 +70,7 @@ export function normalizePlace(raw: RawPlace, now = new Date().toISOString(), fo
   const name = clean(raw.title ?? raw.name ?? raw.businessName);
   if (!name) return null;
   const address = clean(raw.address ?? raw.street ?? raw.fullAddress);
-  const phone = normalizePhone(raw.phone ?? raw.phoneNumber ?? raw.contactPhone);
+  const phone = extractBusinessPhone(raw);
   const website = normalizeWebsite(raw.website ?? raw.websiteUrl ?? raw.site);
   const categories = raw.categories ?? raw.categoryName ?? raw.category ?? raw.primaryCategory;
   const segment = forcedSegment ?? inferSegment(name, categories);
