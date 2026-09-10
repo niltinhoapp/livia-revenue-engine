@@ -137,6 +137,10 @@ export interface Lead {
   googleMapsUrl: string | null;
   rating: number | null;
   reviews: number | null;
+  automationSignal?: 'PROBABLE' | 'POSSIBLE' | 'NOT_DETECTED' | 'UNVERIFIED';
+  automationScore?: number;
+  automationEvidence?: string[];
+  automationCheckedAt?: string;
   source: 'apify' | 'manual' | 'import';
   sourceId: string | null;
   dataQualityScore: number;
