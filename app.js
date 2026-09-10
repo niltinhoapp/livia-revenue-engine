@@ -11,15 +11,26 @@ const summary = $('summary');
 const results = $('results');
 const table = $('lead-table');
 const empty = $('empty');
+const searchSegment = $('search-segment');
+const selectedSegmentLabel = $('selected-segment-label');
 const segmentFilter = $('segment-filter');
 const scoreFilter = $('score-filter');
 const drawer = $('drawer');
 const drawerContent = $('drawer-content');
 
 const segmentNames = {
-  barbearia: 'Barbearia',
-  salao_de_beleza: 'Salão de beleza',
-  manicure_nail_designer: 'Manicure / Nail',
+  barbearia: 'Barbearias',
+  salao_de_beleza: 'Salões de beleza',
+  manicure_nail_designer: 'Manicure / Nail Designer',
+  clinica_odontologica: 'Clínicas odontológicas',
+  clinica_estetica: 'Clínicas de estética',
+  academia: 'Academias',
+  pet_shop: 'Pet shops',
+  veterinaria: 'Clínicas veterinárias',
+  restaurante: 'Restaurantes',
+  imobiliaria: 'Imobiliárias',
+  oficina_mecanica: 'Oficinas mecânicas',
+  escola_curso: 'Escolas / Cursos',
 };
 
 const stageNames = {
@@ -36,22 +47,25 @@ const stageNames = {
   'OPT-OUT': 'Opt-out',
 };
 
+const genericApproachTemplates = [
+  (name) => `Oi, tudo bem? Vi a ${name} e queria te fazer uma pergunta rápida. Hoje vocês conseguem responder todos os clientes que chamam pelo WhatsApp, mesmo nos horários mais corridos? Trabalho com uma recepcionista virtual que cuida desse primeiro atendimento. Se fizer sentido, posso te mostrar como funciona.`,
+  (name) => `Oi! Tudo certo? Vi a ${name} e fiquei curioso: quando chegam mensagens no WhatsApp enquanto vocês estão atendendo, alguém consegue responder todos os clientes? A Livia foi criada para ajudar nesse primeiro atendimento. Posso te mostrar rapidamente como funciona?`,
+  (name) => `Oi! Tudo bem? Vi a ${name} e queria entender uma coisa: vocês já têm alguma forma de atender automaticamente quem chama no WhatsApp quando a equipe está ocupada? Tenho uma solução de recepção virtual para esse primeiro contato. Se quiser, te mostro sem compromisso.`,
+];
+
 const approachTemplates = {
-  barbearia: [
-    (name) => `Oi, tudo bem? Vi a ${name} e queria te fazer uma pergunta rápida. Hoje vocês conseguem responder todos os clientes que chamam pelo WhatsApp, mesmo nos horários mais corridos? Trabalho com uma recepcionista virtual que cuida desse primeiro atendimento. Se fizer sentido, posso te mostrar como funciona.`,
-    (name) => `Oi! Tudo certo? Conheci a ${name} e fiquei curioso: quando chegam mensagens no WhatsApp enquanto vocês estão atendendo, alguém consegue responder todos os clientes? A Livia foi criada justamente para ajudar nesse primeiro atendimento. Posso te mostrar rapidamente como funciona?`,
-    (name) => `Oi! Tudo bem? Vi a ${name} e queria entender uma coisa: vocês já têm alguma forma de atender automaticamente quem chama no WhatsApp quando a equipe está ocupada? Tenho uma solução de recepção virtual para esse primeiro contato. Se quiser, te mostro sem compromisso.`,
-  ],
-  salao_de_beleza: [
-    (name) => `Oi, tudo bem? Vi o ${name} e queria te fazer uma pergunta rápida. Hoje vocês conseguem responder todos os clientes que chamam pelo WhatsApp, mesmo nos horários mais corridos? Trabalho com uma recepcionista virtual que cuida desse primeiro atendimento. Se fizer sentido, posso te mostrar como funciona.`,
-    (name) => `Oi! Tudo certo? Vi o ${name} e fiquei curioso: quando chegam mensagens no WhatsApp enquanto vocês estão atendendo, alguém consegue responder todos os clientes? A Livia foi criada justamente para cuidar desse primeiro atendimento. Posso te mostrar rapidamente como funciona?`,
-    (name) => `Oi! Tudo bem? Vi o ${name} e queria entender uma coisa: vocês já têm alguma forma de atender automaticamente quem chama no WhatsApp quando a equipe está ocupada? Tenho uma solução de recepção virtual para esse primeiro contato. Se quiser, te mostro sem compromisso.`,
-  ],
-  manicure_nail_designer: [
-    (name) => `Oi, tudo bem? Vi a ${name} e queria te fazer uma pergunta rápida. Quando chegam clientes pelo WhatsApp enquanto você está atendendo, consegue responder todos? Trabalho com uma recepcionista virtual que cuida desse primeiro atendimento. Se fizer sentido, posso te mostrar como funciona.`,
-    (name) => `Oi! Tudo certo? Vi a ${name} e fiquei curioso: quando você está atendendo uma cliente e chega uma mensagem no WhatsApp, alguém consegue responder? A Livia foi criada para ajudar justamente nesse primeiro atendimento. Posso te mostrar rapidamente como funciona?`,
-    (name) => `Oi! Tudo bem? Vi a ${name} e queria entender uma coisa: você já tem alguma forma de atender automaticamente quem chama no WhatsApp enquanto está atendendo? Tenho uma solução de recepção virtual para esse primeiro contato. Se quiser, te mostro sem compromisso.`,
-  ],
+  barbearia: genericApproachTemplates,
+  salao_de_beleza: genericApproachTemplates,
+  manicure_nail_designer: genericApproachTemplates,
+  clinica_odontologica: genericApproachTemplates,
+  clinica_estetica: genericApproachTemplates,
+  academia: genericApproachTemplates,
+  pet_shop: genericApproachTemplates,
+  veterinaria: genericApproachTemplates,
+  restaurante: genericApproachTemplates,
+  imobiliaria: genericApproachTemplates,
+  oficina_mecanica: genericApproachTemplates,
+  escola_curso: genericApproachTemplates,
 };
 
 function escapeHtml(value) {
@@ -118,7 +132,7 @@ function normalizedPhone(phone) {
 
 function getApproachVariations(lead) {
   const name = String(lead.name || '').trim();
-  const templates = approachTemplates[lead.segment] || approachTemplates.salao_de_beleza;
+  const templates = approachTemplates[lead.segment] || genericApproachTemplates;
   const safeName = name || 'seu negócio';
   return templates.map((template) => template(safeName));
 }
@@ -176,7 +190,8 @@ async function searchLeads(event) {
   event.preventDefault();
   const city = $('city').value.trim();
   const max = $('max').value;
-  if (!city) return;
+  const segment = searchSegment.value;
+  if (!city || !segment) return;
 
   errorBox.classList.add('hidden');
   loading.classList.remove('hidden');
@@ -184,7 +199,7 @@ async function searchLeads(event) {
   button.textContent = 'Buscando...';
 
   try {
-    const response = await fetch(`/api?city=${encodeURIComponent(city)}&max=${encodeURIComponent(max)}`);
+    const response = await fetch(`/api?city=${encodeURIComponent(city)}&segment=${encodeURIComponent(segment)}&max=${encodeURIComponent(max)}`);
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || 'Não foi possível concluir a busca.');
     state.leads = Array.isArray(data.leads) ? data.leads : [];
@@ -213,6 +228,7 @@ function updateSummary(data) {
   const found = Number(data.collected ?? state.leads.length);
   const qualified = Number(data.qualified ?? 0);
   $('metric-rate').textContent = found ? `${Math.round((qualified / found) * 100)}%` : '0%';
+  selectedSegmentLabel.textContent = segmentNames[data.segment] || segmentNames[searchSegment.value] || 'Segmento selecionado';
 }
 
 function renderTable() {
@@ -234,7 +250,7 @@ function renderTable() {
   `).join('');
 
   empty.classList.toggle('hidden', state.filtered.length !== 0);
-  $('results-subtitle').textContent = `${state.filtered.length} lead${state.filtered.length === 1 ? '' : 's'} exibido${state.filtered.length === 1 ? '' : 's'} · resultado da última busca`;
+  $('results-subtitle').textContent = `${state.filtered.length} lead${state.filtered.length === 1 ? '' : 's'} exibido${state.filtered.length === 1 ? '' : 's'} · ${segmentNames[searchSegment.value] || 'segmento'} · resultado da última busca`;
 }
 
 function bindApproach(lead, variationIndex) {
@@ -308,6 +324,9 @@ function closeDrawer() {
 }
 
 form.addEventListener('submit', searchLeads);
+searchSegment.addEventListener('change', () => {
+  selectedSegmentLabel.textContent = segmentNames[searchSegment.value] || 'Segmento selecionado';
+});
 segmentFilter.addEventListener('change', renderTable);
 scoreFilter.addEventListener('change', renderTable);
 table.addEventListener('click', (event) => {
