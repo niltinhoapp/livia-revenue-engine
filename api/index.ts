@@ -7,10 +7,30 @@ import { qualifyAll } from '../src/qualify.js';
 import { enrichAutomationSignals } from '../src/automation-signals.js';
 
 const DEFAULT_SEGMENT: IcpSegment = 'barbearia';
+const DEMO_COOKIE = 'livia_revenue_demo';
+const DEMO_MARKER = 'used';
+const DEMO_MAX = 20;
 
 function parseSegment(value: unknown): IcpSegment {
   const segment = typeof value === 'string' ? value : DEFAULT_SEGMENT;
   return (ICP_SEGMENTS as readonly string[]).includes(segment) ? segment as IcpSegment : DEFAULT_SEGMENT;
+}
+
+function isDemoRequest(req: VercelRequest): boolean {
+  if (req.cookies?.[DEMO_COOKIE] === DEMO_MARKER) return true;
+  const referer = typeof req.headers.referer === 'string' ? req.headers.referer : '';
+  try {
+    return new URL(referer).searchParams.get('demo') === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markDemoUsed(res: VercelResponse) {
+  res.setHeader(
+    'Set-Cookie',
+    `${DEMO_COOKIE}=${DEMO_MARKER}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax`,
+  );
 }
 
 export default async function handler(
@@ -25,6 +45,16 @@ export default async function handler(
       });
     }
 
+    const demo = isDemoRequest(req);
+
+    if (demo && req.cookies?.[DEMO_COOKIE] === DEMO_MARKER) {
+      return res.status(403).json({
+        ok: false,
+        demo: true,
+        error: 'Sua demonstração já foi utilizada. Você pode continuar navegando, mas uma nova prospecção não está disponível neste acesso.',
+      });
+    }
+
     const city =
       typeof req.query.city === 'string'
         ? req.query.city
@@ -35,10 +65,12 @@ export default async function handler(
         ? Number(req.query.max)
         : 10;
 
-    const max = Math.min(
-      100,
-      Math.max(10, Number.isFinite(requestedMax) ? requestedMax : 10),
-    );
+    const max = demo
+      ? DEMO_MAX
+      : Math.min(
+          100,
+          Math.max(10, Number.isFinite(requestedMax) ? requestedMax : 10),
+        );
 
     const segment = parseSegment(req.query.segment);
     const queries = buildQueries(city, segment);
@@ -57,8 +89,11 @@ export default async function handler(
       qualifyAll(dedupeLeads(normalized)).slice(0, max),
     );
 
+    if (demo) markDemoUsed(res);
+
     return res.status(200).json({
       ok: true,
+      demo,
       city,
       segment,
       requested: max,
