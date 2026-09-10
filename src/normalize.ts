@@ -12,18 +12,7 @@ function normalizeWebsite(value: unknown): string | null {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-    const socialHosts = new Set([
-      'instagram.com',
-      'facebook.com',
-      'fb.com',
-      'tiktok.com',
-      'youtube.com',
-      'youtu.be',
-      'x.com',
-      'twitter.com',
-      'linkedin.com',
-    ]);
-
+    const socialHosts = new Set(['instagram.com','facebook.com','fb.com','tiktok.com','youtube.com','youtu.be','x.com','twitter.com','linkedin.com']);
     if (socialHosts.has(host)) return null;
     return url;
   } catch {
@@ -37,10 +26,23 @@ export function normalizePhone(value: unknown): string | null {
   return digits.startsWith('55') ? digits : `55${digits}`;
 }
 
+/** Structural validation only: this does not prove ownership of the number. */
+export function validateBusinessPhone(phone: string | null): 'MISSING' | 'NEEDS_REVIEW' | 'REJECTED' {
+  if (!phone) return 'MISSING';
+  const digits = phone.replace(/\D/g, '');
+  if (!/^55\d{10,11}$/.test(digits)) return 'REJECTED';
+  const ddd = Number(digits.slice(2, 4));
+  if (ddd < 11 || ddd > 99) return 'REJECTED';
+  const subscriber = digits.slice(4);
+  if (/^(\d)\1+$/.test(subscriber)) return 'REJECTED';
+  if (subscriber.length === 9 && subscriber[0] !== '9') return 'REJECTED';
+  if (subscriber.length === 8 && !/[2-5]/.test(subscriber[0])) return 'REJECTED';
+  return 'NEEDS_REVIEW';
+}
+
 /**
  * Accept only the place/business phone fields exposed by the Google Maps
- * scraper. Do not fall back to generic contact/enrichment fields: those can
- * belong to another person/company and create an unsafe lead association.
+ * scraper. Do not fall back to generic contact/enrichment fields.
  */
 function extractBusinessPhone(raw: RawPlace): string | null {
   return normalizePhone(raw.phone ?? raw.phoneUnformatted);
@@ -69,40 +71,14 @@ function stableId(name: string, phone: string | null, address: string): string {
 function calculateDataQuality(lead: Omit<Lead, 'dataQualityScore' | 'dataQualityReasons'>): Pick<Lead, 'dataQualityScore' | 'dataQualityReasons'> {
   let score = 0;
   const reasons: string[] = [];
-
-  if (lead.name) {
-    score += 15;
-    reasons.push('nome encontrado');
-  }
-  if (lead.segment) {
-    score += 15;
-    reasons.push('segmento identificado');
-  }
-  if (lead.city) {
-    score += 10;
-    reasons.push('cidade encontrada');
-  }
-  if (lead.address) {
-    score += 15;
-    reasons.push('endereço encontrado');
-  }
-  if (lead.phone) {
-    score += 20;
-    reasons.push('telefone do place encontrado');
-  }
-  if (lead.website) {
-    score += 10;
-    reasons.push('site encontrado');
-  }
-  if (lead.googleMapsUrl) {
-    score += 10;
-    reasons.push('Google Maps encontrado');
-  }
-  if (lead.rating !== null || lead.reviews !== null) {
-    score += 5;
-    reasons.push('avaliação/reviews encontrados');
-  }
-
+  if (lead.name) { score += 15; reasons.push('nome encontrado'); }
+  if (lead.segment) { score += 15; reasons.push('segmento identificado'); }
+  if (lead.city) { score += 10; reasons.push('cidade encontrada'); }
+  if (lead.address) { score += 15; reasons.push('endereço encontrado'); }
+  if (lead.phone) { score += 20; reasons.push('telefone do place encontrado'); }
+  if (lead.website) { score += 10; reasons.push('site encontrado'); }
+  if (lead.googleMapsUrl) { score += 10; reasons.push('Google Maps encontrado'); }
+  if (lead.rating !== null || lead.reviews !== null) { score += 5; reasons.push('avaliação/reviews encontrados'); }
   return { dataQualityScore: Math.min(score, 100), dataQualityReasons: reasons };
 }
 
@@ -111,6 +87,7 @@ export function normalizePlace(raw: RawPlace, now = new Date().toISOString(), fo
   if (!name) return null;
   const address = clean(raw.address ?? raw.street ?? raw.fullAddress);
   const phone = extractBusinessPhone(raw);
+  const phoneStatus = validateBusinessPhone(phone);
   const website = normalizeWebsite(raw.website ?? raw.websiteUrl ?? raw.site);
   const categories = raw.categories ?? raw.categoryName ?? raw.category ?? raw.primaryCategory;
   const segment = forcedSegment ?? inferSegment(name, categories);
@@ -126,13 +103,11 @@ export function normalizePlace(raw: RawPlace, now = new Date().toISOString(), fo
   const id = sourceId || stableId(name, phone, address);
   const baseLead = {
     id, name, segment, city, state, country, address, phone, whatsapp: phone,
-    phoneStatus: phone ? 'NEEDS_REVIEW' as const : 'MISSING' as const,
-    website, googleMapsUrl, rating, reviews, source: 'apify' as const, sourceId,
+    phoneStatus, website, googleMapsUrl, rating, reviews, source: 'apify' as const, sourceId,
     score: 0, scoreReasons: [], stage: 'NOVO' as const, optOut: false,
     contactedAt: null, lastContactAt: null, personalizedMessage: null, notes: null,
     createdAt: now, updatedAt: now,
   };
-
   return { ...baseLead, ...calculateDataQuality(baseLead) };
 }
 
@@ -141,7 +116,6 @@ export function dedupeLeads(leads: Lead[]): Lead[] {
   const seenSourceIds = new Set<string>();
   const seenFallbackKeys = new Set<string>();
   const result: Lead[] = [];
-
   for (const lead of leads) {
     if (lead.phone) {
       if (seenPhones.has(lead.phone)) continue;
@@ -154,9 +128,7 @@ export function dedupeLeads(leads: Lead[]): Lead[] {
       if (seenFallbackKeys.has(fallbackKey)) continue;
       seenFallbackKeys.add(fallbackKey);
     }
-
     result.push(lead);
   }
-
   return result;
 }
