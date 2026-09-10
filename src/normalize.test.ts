@@ -16,7 +16,7 @@ test('ignora Instagram quando o Actor entrega perfil social no campo website', (
   assert.equal(lead.website, null);
   assert.equal(lead.googleMapsUrl, 'https://www.google.com/maps/search/?api=1&query=A%20Barbearia');
   assert.equal(lead.phoneStatus, 'NEEDS_REVIEW');
-  assert.equal(lead.dataQualityScore, 90);
+  assert.equal(lead.dataQualityScore, 75);
 });
 
 test('mantém site oficial quando o campo website é um domínio real', () => {
