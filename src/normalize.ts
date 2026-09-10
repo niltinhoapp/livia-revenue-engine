@@ -66,6 +66,46 @@ function stableId(name: string, phone: string | null, address: string): string {
   return crypto.createHash('sha256').update(`${normalizeText(name)}|${phone ?? ''}|${normalizeText(address)}`).digest('hex').slice(0, 16);
 }
 
+function calculateDataQuality(lead: Omit<Lead, 'dataQualityScore' | 'dataQualityReasons'>): Pick<Lead, 'dataQualityScore' | 'dataQualityReasons'> {
+  let score = 0;
+  const reasons: string[] = [];
+
+  if (lead.name) {
+    score += 15;
+    reasons.push('nome encontrado');
+  }
+  if (lead.segment) {
+    score += 15;
+    reasons.push('segmento identificado');
+  }
+  if (lead.city) {
+    score += 10;
+    reasons.push('cidade encontrada');
+  }
+  if (lead.address) {
+    score += 15;
+    reasons.push('endereço encontrado');
+  }
+  if (lead.phone) {
+    score += 20;
+    reasons.push('telefone do place encontrado');
+  }
+  if (lead.website) {
+    score += 10;
+    reasons.push('site encontrado');
+  }
+  if (lead.googleMapsUrl) {
+    score += 10;
+    reasons.push('Google Maps encontrado');
+  }
+  if (lead.rating !== null || lead.reviews !== null) {
+    score += 5;
+    reasons.push('avaliação/reviews encontrados');
+  }
+
+  return { dataQualityScore: Math.min(score, 100), dataQualityReasons: reasons };
+}
+
 export function normalizePlace(raw: RawPlace, now = new Date().toISOString(), forcedSegment?: IcpSegment): Lead | null {
   const name = clean(raw.title ?? raw.name ?? raw.businessName);
   if (!name) return null;
@@ -84,11 +124,16 @@ export function normalizePlace(raw: RawPlace, now = new Date().toISOString(), fo
   const reviews = Number.isFinite(Number(reviewsRaw)) ? Number(reviewsRaw) : null;
   const rating = Number.isFinite(Number(ratingRaw)) ? Number(ratingRaw) : null;
   const id = sourceId || stableId(name, phone, address);
-  return {
-    id, name, segment, city, state, country, address, phone, whatsapp: phone, website, googleMapsUrl,
-    rating, reviews, source: 'apify', sourceId, score: 0, scoreReasons: [], stage: 'NOVO', optOut: false,
-    contactedAt: null, lastContactAt: null, personalizedMessage: null, notes: null, createdAt: now, updatedAt: now,
+  const baseLead = {
+    id, name, segment, city, state, country, address, phone, whatsapp: phone,
+    phoneStatus: phone ? 'NEEDS_REVIEW' as const : 'MISSING' as const,
+    website, googleMapsUrl, rating, reviews, source: 'apify' as const, sourceId,
+    score: 0, scoreReasons: [], stage: 'NOVO' as const, optOut: false,
+    contactedAt: null, lastContactAt: null, personalizedMessage: null, notes: null,
+    createdAt: now, updatedAt: now,
   };
+
+  return { ...baseLead, ...calculateDataQuality(baseLead) };
 }
 
 export function dedupeLeads(leads: Lead[]): Lead[] {
