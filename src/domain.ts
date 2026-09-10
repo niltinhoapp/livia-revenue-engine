@@ -34,6 +34,31 @@ export type PipelineStage = (typeof PIPELINE_STAGES)[number];
 export const PHONE_STATUSES = ['MISSING', 'NEEDS_REVIEW', 'VERIFIED', 'REJECTED'] as const;
 export type PhoneStatus = (typeof PHONE_STATUSES)[number];
 
+export const CRM_EVENT_TYPES = [
+  'LEAD_CREATED',
+  'LEAD_UPDATED',
+  'PHONE_VERIFIED',
+  'PHONE_REJECTED',
+  'MESSAGE_PREPARED',
+  'CONTACTED',
+  'STAGE_CHANGED',
+  'NOTE_ADDED',
+  'OPT_OUT',
+] as const;
+export type CrmEventType = (typeof CRM_EVENT_TYPES)[number];
+
+export interface CrmEvent {
+  id: string;
+  leadId: string;
+  type: CrmEventType;
+  occurredAt: string;
+  fromStage?: PipelineStage;
+  toStage?: PipelineStage;
+  message?: string;
+  note?: string;
+  metadata?: Record<string, string | number | boolean | null>;
+}
+
 export interface Lead {
   id: string;
   name: string;
