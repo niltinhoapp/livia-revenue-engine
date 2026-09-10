@@ -1,10 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Lead } from './domain.js';
+import type { CrmEvent, Lead } from './domain.js';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const JSON_PATH = path.join(DATA_DIR, 'leads.json');
 const CSV_PATH = path.join(DATA_DIR, 'leads.csv');
+const EVENTS_PATH = path.join(DATA_DIR, 'crm-events.json');
 
 export async function saveLeads(leads: Lead[]): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -18,6 +19,25 @@ export async function loadLeads(): Promise<Lead[]> {
   } catch {
     return [];
   }
+}
+
+export async function saveCrmEvents(events: CrmEvent[]): Promise<void> {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  await fs.writeFile(EVENTS_PATH, JSON.stringify(events, null, 2), 'utf8');
+}
+
+export async function loadCrmEvents(): Promise<CrmEvent[]> {
+  try {
+    return JSON.parse(await fs.readFile(EVENTS_PATH, 'utf8')) as CrmEvent[];
+  } catch {
+    return [];
+  }
+}
+
+export async function appendCrmEvent(event: CrmEvent): Promise<void> {
+  const events = await loadCrmEvents();
+  events.push(event);
+  await saveCrmEvents(events);
 }
 
 function csvCell(value: unknown): string {
@@ -39,5 +59,5 @@ export function toCsv(leads: Lead[]): string {
 }
 
 export function dataPaths() {
-  return { json: JSON_PATH, csv: CSV_PATH };
+  return { json: JSON_PATH, csv: CSV_PATH, events: EVENTS_PATH };
 }
