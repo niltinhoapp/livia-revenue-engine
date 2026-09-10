@@ -4,6 +4,7 @@ import { buildQueries } from '../src/queries.js';
 import { ICP_SEGMENTS, type IcpSegment, type Lead, type RawPlace } from '../src/domain.js';
 import { dedupeLeads, normalizePlace } from '../src/normalize.js';
 import { qualifyAll } from '../src/qualify.js';
+import { enrichAutomationSignals } from '../src/automation-signals.js';
 
 const DEFAULT_SEGMENT: IcpSegment = 'barbearia';
 
@@ -52,7 +53,9 @@ export default async function handler(
       .map((item: RawPlace) => normalizePlace(item, undefined, segment))
       .filter((lead): lead is Lead => Boolean(lead));
 
-    const leads = qualifyAll(dedupeLeads(normalized)).slice(0, max);
+    const leads = await enrichAutomationSignals(
+      qualifyAll(dedupeLeads(normalized)).slice(0, max),
+    );
 
     return res.status(200).json({
       ok: true,
