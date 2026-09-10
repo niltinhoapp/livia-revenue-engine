@@ -4,7 +4,7 @@
   function readSignals() {
     try {
       const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      return value && typeof value === 'object' ? value : {};
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
     } catch {
       return {};
     }
@@ -15,8 +15,13 @@
   }
 
   function currentLeadKey() {
-    const heading = document.querySelector('#drawer-content h2, #drawer-content h3');
-    return heading ? heading.textContent.trim() : null;
+    const drawer = document.querySelector('#drawer-content');
+    if (!drawer) return null;
+    const phoneMatch = drawer.textContent.match(/\+55\s*\(?\d{2}\)?\s*\d{4,5}[-\s]?\d{4}/);
+    if (phoneMatch) return `phone:${phoneMatch[0].replace(/\D/g, '')}`;
+    const heading = drawer.querySelector('h2, h3');
+    const name = heading?.textContent?.trim();
+    return name ? `name:${name}` : null;
   }
 
   function render() {
@@ -32,9 +37,7 @@
     const hasWebsite = /Conferir site|Revisar site/i.test(text);
     const reviewMatch = text.match(/(\d+) avaliações/i);
     const reviews = reviewMatch ? Number(reviewMatch[1]) : null;
-    const signals = readSignals();
-    const saved = signals[key] || {};
-
+    const saved = readSignals()[key] || {};
     const traffic = saved.paidTraffic || 'UNKNOWN';
     const trafficLabel = { YES: 'Sim', NO: 'Não', UNKNOWN: 'Não verificado' }[traffic];
 
@@ -55,14 +58,16 @@
       <div class="approach-note">Os sinais são usados como contexto comercial. O Revenue Engine não deve afirmar que uma empresa anuncia se isso não foi confirmado.</div>
     `;
 
-    const approach = drawer.querySelector('.detail-section h3')?.parentElement;
+    const approach = [...drawer.querySelectorAll('.detail-section')]
+      .find((item) => item.querySelector('h3')?.textContent?.trim() === 'Abordagem');
     if (approach) approach.before(section);
     else drawer.prepend(section);
 
     section.querySelectorAll('[data-traffic]').forEach((button) => {
       button.addEventListener('click', () => {
-        const next = { ...readSignals(), [key]: { paidTraffic: button.dataset.traffic } };
-        writeSignals(next);
+        const signals = readSignals();
+        signals[key] = { paidTraffic: button.dataset.traffic };
+        writeSignals(signals);
         const label = { YES: 'Sim', NO: 'Não', UNKNOWN: 'Não verificado' }[button.dataset.traffic];
         const target = section.querySelector('[data-paid-traffic]');
         if (target) target.textContent = label;
