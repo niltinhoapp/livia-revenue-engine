@@ -31,7 +31,7 @@
           <h1 id="view-title">Prospecção</h1>
           <p id="view-subtitle">Encontre, qualifique e organize seus próximos clientes da Livia.</p>
         </div>
-        <div class="topbar-actions"><div class="status-pill"><span></span> Online</div></div>
+        <div class="topbar-actions"><div class="status-pill"><span></span> Online</div><button id="logout-btn" class="logout-btn" type="button">Sair</button></div>
       </header>
 
       <main class="content">
@@ -79,9 +79,26 @@
     </div>
   </div>
 
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-mark">L</div>
+        <div class="brand-text"><strong>Livia</strong><span>Revenue Engine</span></div>
+      </div>
+      <form id="auth-form" class="auth-form" autocomplete="off">
+        <label for="auth-password">Senha de acesso</label>
+        <input id="auth-password" type="password" placeholder="Digite a senha" required autofocus />
+        <div id="auth-error" class="auth-error hidden">Senha incorreta.</div>
+        <button id="auth-submit" type="submit">Entrar</button>
+      </form>
+      <p class="auth-foot">Uso interno · ConectWeb</p>
+    </div>
+  </div>
+
   <aside id="drawer" class="drawer" aria-hidden="true"><div class="drawer-backdrop" id="drawer-backdrop"></div><div class="drawer-panel"><button class="close" id="drawer-close" aria-label="Fechar">×</button><div id="drawer-content"></div></div></aside>
   <div id="loading" class="loading hidden"><div class="spinner"></div><span>Buscando empresas no Google Maps...</span></div>
 
+  <script src="/auth-ui.js" defer></script>
   <script src="/app.js" defer></script>
   <script src="/icp-ui.js" defer></script>
   <script src="/stage-ui.js" defer></script>
