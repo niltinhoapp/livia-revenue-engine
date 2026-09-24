@@ -6,7 +6,7 @@ import type { Lead } from './domain.js';
 const base: Lead = {
   id: '1', name: 'Teste Barbearia', segment: 'barbearia', city: 'Bauru', state: 'SP', country: 'Brasil',
   address: 'Rua Teste', phone: '5514999999999', whatsapp: '5514999999999', phoneStatus: 'VERIFIED', website: 'https://example.com',
-  googleMapsUrl: null, rating: 4.8, reviews: 100, source: 'apify', sourceId: 'x', score: 90,
+  googleMapsUrl: null, rating: 4.8, reviews: 100, source: 'apify', sourceId: 'x', dataQualityScore: 0, dataQualityReasons: [], score: 90,
   scoreReasons: [], stage: 'QUALIFICADO', optOut: false, contactedAt: null, lastContactAt: null,
   personalizedMessage: 'Olá! Posso te mostrar a Livia?', notes: null, createdAt: '', updatedAt: '',
 };

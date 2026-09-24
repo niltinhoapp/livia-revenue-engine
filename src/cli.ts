@@ -6,6 +6,7 @@ import { dedupeLeads, normalizePlace } from './normalize.js';
 import { qualifyAll } from './qualify.js';
 import { buildQueries } from './queries.js';
 import { dataPaths, loadLeads, saveLeads } from './storage.js';
+import { enrichAutomationSignals } from './automation-signals.js';
 import type { Lead, RawPlace } from './domain.js';
 
 const arg = (name: string): string | undefined => {
@@ -28,7 +29,11 @@ async function collect() {
   console.log(`Coletando até ${max} empresas no Google Maps: ${city}`);
   const raw = await collectFromApify({ queries, location: city, maxItems: max });
   const normalized = raw.map((item) => normalizePlace(item)).filter((x): x is Lead => Boolean(x));
-  const qualified = qualifyAll(dedupeLeads(normalized)).slice(0, max);
+
+  const deduped = dedupeLeads(normalized);
+  const enriched = await enrichAutomationSignals(deduped);
+  const qualified = qualifyAll(enriched).slice(0, max);
+
   await saveLeads(qualified);
   printSummary(qualified);
 }
@@ -38,7 +43,11 @@ async function importJson() {
   if (!file) throw new Error('Use --file caminho/arquivo.json');
   const raw = await loadRaw(file);
   const normalized = raw.map((item) => normalizePlace(item)).filter((x): x is Lead => Boolean(x));
-  const qualified = qualifyAll(dedupeLeads(normalized));
+
+  const deduped = dedupeLeads(normalized);
+  const enriched = await enrichAutomationSignals(deduped);
+  const qualified = qualifyAll(enriched);
+
   await saveLeads(qualified);
   printSummary(qualified);
 }

@@ -6,9 +6,9 @@ import type { Lead } from './domain.js';
 const lead: Lead = {
   id: '1', name: 'Teste', segment: 'barbearia', city: 'Bauru', state: 'SP', country: 'Brasil', address: '',
   phone: '5514999999999', whatsapp: '5514999999999', website: null, googleMapsUrl: null, rating: null,
-  reviews: null, source: 'manual', sourceId: null, score: 80, scoreReasons: [], stage: 'QUALIFICADO',
+  reviews: null, source: 'manual', sourceId: null, dataQualityScore: 0, dataQualityReasons: [], score: 80, scoreReasons: [], stage: 'QUALIFICADO',
   optOut: false, contactedAt: null, lastContactAt: null, personalizedMessage: 'Olá', notes: null,
-  createdAt: '', updatedAt: '',
+  phoneStatus: 'VERIFIED', createdAt: '', updatedAt: '',
 };
 
 test('allows normal commercial progression', () => {

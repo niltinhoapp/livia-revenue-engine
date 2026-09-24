@@ -6,7 +6,7 @@ test('ignora Instagram quando o Actor entrega perfil social no campo website', (
   const lead = normalizePlace({
     title: 'A Barbearia', website: 'https://instagram.com/chacara_chokito?igshid=YmMyMTA2M2Y=',
     url: 'https://www.google.com/maps/search/?api=1&query=A%20Barbearia', address: 'Rua Teste, 123',
-    phone: '+55 14 99999-9999', categoryName: 'Barbearia',
+    phone: '+55 14 98888-7777', categoryName: 'Barbearia',
   });
   assert.ok(lead);
   assert.equal(lead.website, null);

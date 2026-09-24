@@ -78,8 +78,19 @@ export const SEGMENT_QUERIES: Record<IcpSegment, readonly string[]> = {
   marmitaria: ['marmitaria', 'marmitas', 'comida caseira'],
 };
 
-export const DEFAULT_QUERIES = SEGMENT_QUERIES.barbearia;
+export const DEFAULT_QUERIES = [
+  ...SEGMENT_QUERIES.barbearia,
+  ...SEGMENT_QUERIES.salao_de_beleza,
+  ...SEGMENT_QUERIES.manicure_nail_designer,
+  ...SEGMENT_QUERIES.clinica_estetica,
+  ...SEGMENT_QUERIES.clinica_odontologica,
+  ...SEGMENT_QUERIES.pet_shop,
+  ...SEGMENT_QUERIES.studio_tattoo_piercing,
+];
 
-export function buildQueries(_city: string, segment: IcpSegment = 'barbearia'): string[] {
-  return [...SEGMENT_QUERIES[segment]];
+export function buildQueries(_city: string, segments?: IcpSegment[]): string[] {
+  if (!segments || segments.length === 0) {
+    return DEFAULT_QUERIES;
+  }
+  return segments.flatMap((segment) => SEGMENT_QUERIES[segment] || []);
 }
