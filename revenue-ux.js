@@ -67,6 +67,7 @@
   }
 
   let pollingInterval = null;
+  let syncing = false;
 
   async function apiProspecting(payload) {
     const res = await fetch('/api/prospecting', {
@@ -104,6 +105,12 @@
   }
 
   async function syncProspectingUI() {
+    if (syncing) return;
+    syncing = true;
+    try { await _syncProspectingUI(); } finally { syncing = false; }
+  }
+
+  async function _syncProspectingUI() {
     if (!drawer || !drawerContent || drawer.getAttribute('aria-hidden') === 'true') {
       if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
       return;

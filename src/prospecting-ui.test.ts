@@ -196,3 +196,117 @@ test('revenue-ux.js - syncProspectingUI renders for valid lead via global state'
   const uxContent = fs.readFileSync('revenue-ux.js', 'utf8');
   assert.ok(!uxContent.includes('window.state'), 'revenue-ux.js must not reference window.state');
 });
+
+test('revenue-ux.js - syncProspectingUI re-entrancy guard prevents observer loop', async () => {
+  let syncCallCount = 0;
+  let observerCallbacks: Function[] = [];
+
+  const prepareBtn = {
+    addEventListener: (_: string, fn: Function) => { prepareBtn._handler = fn; },
+    _handler: null as Function | null,
+    disabled: false,
+    textContent: 'Preparar demonstração',
+  };
+
+  const actionsContainer = {
+    className: 'detail-actions livia-prospecting-actions',
+    innerHTML: '',
+    parentNode: { after: () => {} },
+  };
+
+  const statusEl = {
+    className: 'detail-section livia-prospecting-status',
+    innerHTML: '',
+  };
+
+  let statusCreated = false;
+  let actionsCreated = false;
+
+  const drawerContentEl = {
+    querySelector: (sel: string) => {
+      if (sel === '.livia-prospecting-status') return statusCreated ? statusEl : null;
+      if (sel === '.livia-prospecting-actions') return actionsCreated ? actionsContainer : null;
+      return null;
+    },
+    querySelectorAll: (sel: string) => {
+      if (sel === '.detail-section') return [{
+        querySelector: (s: string) => s === 'h3' ? { textContent: 'Abordagem' } : null,
+        after: () => { statusCreated = true; }
+      }];
+      return [];
+    },
+    appendChild: () => { statusCreated = true; },
+    prepend: () => {},
+  };
+
+  const elementsById: Record<string, any> = {
+    'summary': { classList: { contains: () => true }, appendChild: () => {} },
+    'results': { classList: { contains: () => true }, querySelectorAll: () => [], querySelector: () => null },
+    'lead-table': { querySelectorAll: () => [] },
+    'drawer': {
+      getAttribute: () => 'false',
+      classList: { contains: () => false, add: () => {}, remove: () => {} },
+      setAttribute: () => {},
+    },
+    'drawer-content': drawerContentEl,
+    'approach-message': null,
+    'approach-copy': null,
+    'approach-whatsapp': null,
+    'approach-another': null,
+    'livia-prepare': prepareBtn,
+  };
+
+  (globalThis as any).document = {
+    getElementById: (id: string) => elementsById[id] ?? null,
+    createElement: () => {
+      const el = {
+        className: '', innerHTML: '', addEventListener: () => {},
+        appendChild: () => {}, after: () => {}, prepend: () => {},
+        style: {}, querySelector: () => null, querySelectorAll: () => [],
+        parentNode: { after: () => { actionsCreated = true; } },
+      };
+      return el;
+    },
+  };
+
+  (globalThis as any).state = {
+    leads: [{ id: 'x', phone: '123', name: 'Test', segment: 's' }],
+    currentLeadId: 'x'
+  };
+  (globalThis as any).window = {};
+
+  // Simulate MutationObserver that fires callback on DOM changes
+  (globalThis as any).MutationObserver = class {
+    _cb: Function;
+    constructor(cb: Function) { this._cb = cb; observerCallbacks.push(cb); }
+    observe() {}
+  };
+
+  // Track fetch calls to count how many times syncProspectingUI runs to completion
+  let fetchCount = 0;
+  (globalThis as any).fetch = async () => {
+    fetchCount++;
+    syncCallCount++;
+    // Simulate observer firing during DOM update (re-entrancy attempt)
+    for (const cb of observerCallbacks) cb();
+    return {
+      status: 404,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ error: 'Not found' })
+    };
+  };
+
+  const script = fs.readFileSync('revenue-ux.js', 'utf8');
+  eval(script);
+
+  // Wait for the first syncProspectingUI triggered by observer setup
+  await new Promise(r => setTimeout(r, 100));
+
+  // The re-entrancy guard should prevent recursive calls.
+  // Without the guard, fetchCount would be unbounded. With it, it should be small.
+  assert.ok(fetchCount <= 3, `Fetch called ${fetchCount} times — re-entrancy guard should limit calls`);
+
+  // Verify the guard variable exists in the source
+  const uxContent = fs.readFileSync('revenue-ux.js', 'utf8');
+  assert.ok(uxContent.includes('if (syncing) return'), 'revenue-ux.js must have re-entrancy guard');
+});
