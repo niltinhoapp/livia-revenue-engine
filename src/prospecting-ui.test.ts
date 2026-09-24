@@ -310,3 +310,35 @@ test('revenue-ux.js - syncProspectingUI re-entrancy guard prevents observer loop
   const uxContent = fs.readFileSync('revenue-ux.js', 'utf8');
   assert.ok(uxContent.includes('if (syncing) return'), 'revenue-ux.js must have re-entrancy guard');
 });
+
+test('revenue-ux.js - unwraps { session } envelope from Livia response', async () => {
+  // Livia returns { session: { status: "PREPARED", ... } }.
+  // The client must use res.data.session, not res.data directly.
+
+  const { getStatusLabel } = (globalThis as any).window.LiviaProspectingClient;
+
+  // Simulate what the fixed code does: unwrap { session: X } → X
+  const liviaResponse = {
+    session: {
+      status: 'PREPARED',
+      normalizedPhone: '5511999887766',
+      initialManualMessage: 'Olá, tudo bem?'
+    }
+  };
+
+  // This is what the fixed line does: res.data?.session ?? res.data
+  const unwrapped = liviaResponse?.session ?? liviaResponse;
+  assert.equal(unwrapped.status, 'PREPARED', 'Unwrapped session must have status');
+  assert.equal(unwrapped.normalizedPhone, '5511999887766', 'Unwrapped session must have normalizedPhone');
+  assert.equal(getStatusLabel(unwrapped.status), 'Demonstração preparada', 'getStatusLabel must resolve PREPARED');
+
+  // Verify the source code does the unwrapping
+  const uxContent = fs.readFileSync('revenue-ux.js', 'utf8');
+  assert.ok(uxContent.includes('res.data?.session ?? res.data'),
+    'revenue-ux.js must unwrap the { session } envelope');
+
+  // Without unwrapping (the old bug): status would be undefined
+  const broken = liviaResponse as any;
+  assert.equal(broken.status, undefined, 'Without unwrapping, status is undefined (the bug)');
+  assert.equal(getStatusLabel(broken.status), undefined, 'Without unwrapping, getStatusLabel returns undefined');
+});

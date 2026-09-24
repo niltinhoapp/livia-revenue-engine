@@ -222,8 +222,9 @@
 
     try {
       const res = await apiProspecting({ action: 'get', leadId: String(lead.id) });
-      updateUI(res.status === 200 ? res.data : null);
-      if (res.status === 200 && !isTerminalStatus(res.data.status)) {
+      const session = res.status === 200 ? (res.data?.session ?? res.data) : null;
+      updateUI(session);
+      if (session && !isTerminalStatus(session.status)) {
         if (!pollingInterval) pollingInterval = setInterval(syncProspectingUI, 8000);
       } else {
         if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
