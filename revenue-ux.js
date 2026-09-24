@@ -109,7 +109,7 @@
       return;
     }
     
-    const lead = window.state?.leads?.find(l => l.id === window.state.currentLeadId);
+    const lead = state?.leads?.find(l => l.id === state.currentLeadId);
     if (!lead) return;
 
     let statusSection = drawerContent.querySelector('.livia-prospecting-status');
