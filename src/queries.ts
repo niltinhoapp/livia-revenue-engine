@@ -88,9 +88,10 @@ export const DEFAULT_QUERIES = [
   ...SEGMENT_QUERIES.studio_tattoo_piercing,
 ];
 
-export function buildQueries(_city: string, segments?: IcpSegment[]): string[] {
-  if (!segments || segments.length === 0) {
+export function buildQueries(_city: string, segmentsInput?: IcpSegment | IcpSegment[]): string[] {
+  if (!segmentsInput || (Array.isArray(segmentsInput) && segmentsInput.length === 0)) {
     return DEFAULT_QUERIES;
   }
+  const segments = Array.isArray(segmentsInput) ? segmentsInput : [segmentsInput];
   return segments.flatMap((segment) => SEGMENT_QUERIES[segment] || []);
 }

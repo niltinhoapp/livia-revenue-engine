@@ -30,3 +30,9 @@ test('buildQueries - com múltiplos segmentos combinados', () => {
   assert.ok(queries.includes('pet shop'));
   assert.ok(queries.includes('veterinário'));
 });
+
+test('buildQueries - com um único segmento passado como string (retrocompatibilidade)', () => {
+  const queries = buildQueries('Bauru', 'salao_de_beleza');
+  assert.deepEqual(queries, SEGMENT_QUERIES['salao_de_beleza']);
+  assert.ok(queries.includes('salão de beleza'));
+});
