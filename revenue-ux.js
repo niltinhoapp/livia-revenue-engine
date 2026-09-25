@@ -71,7 +71,10 @@
   const prospectingChannels = new Map();
 
   function getProspectingChannel(leadId) {
-    return prospectingChannels.get(String(leadId)) || 'revenue';
+    const stored = prospectingChannels.get(String(leadId));
+    if (stored) return stored;
+    const lead = state?.leads?.find(l => String(l.id) === String(leadId));
+    return lead?.channel === 'demo' ? 'demo' : 'revenue';
   }
 
   function setProspectingChannel(leadId, channel) {
@@ -169,6 +172,8 @@
           <button class="primary" id="livia-prepare">Preparar demonstração</button>`;
         const channelSelect = document.getElementById('livia-channel');
         channelSelect.value = channel;
+        // A contact created as "Demonstração" is never routed into the Revenue funnel.
+        if (lead.channel === 'demo') channelSelect.disabled = true;
         channelSelect.addEventListener('change', () => {
           setProspectingChannel(lead.id, channelSelect.value);
           syncProspectingUI();

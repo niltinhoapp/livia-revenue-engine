@@ -50,7 +50,7 @@
               </label>
               <button id="search-button" type="submit">Buscar empresas</button>
             </form>
-            <div class="segments"><span>Busca atual:</span><span class="tag" id="selected-segment-label">Barbearias</span><span class="tag">Google Maps</span><span class="tag">Busca direcionada</span></div>
+            <div class="segments"><span>Busca atual:</span><span class="tag" id="selected-segment-label">Barbearias</span><span class="tag">Google Maps</span><span class="tag">Busca direcionada</span><button type="button" class="link-btn" id="manual-contact-open">+ Adicionar contato</button></div>
             <div id="error" class="error hidden"></div>
           </section>
 
@@ -95,6 +95,35 @@
     </div>
   </div>
 
+  <div id="manual-contact-modal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="manual-contact-title">
+    <div class="modal-backdrop" id="manual-contact-backdrop"></div>
+    <div class="modal-panel">
+      <button class="close" id="manual-contact-close" type="button" aria-label="Fechar">×</button>
+      <h2 id="manual-contact-title">Adicionar contato</h2>
+      <p class="muted">Cadastre um estabelecimento que você já conhece, sem depender da busca do Google Maps.</p>
+      <form id="manual-contact-form" class="manual-form" autocomplete="off">
+        <label>Nome do estabelecimento<input id="manual-name" type="text" maxlength="120" required /></label>
+        <label>Telefone (DDI + DDD)<input id="manual-phone" type="tel" maxlength="24" placeholder="+55 14 99999-9999" required /></label>
+        <label>Segmento
+          <select id="manual-segment">
+            <option value="barbearia">Barbearias</option><option value="salao_de_beleza">Salões de beleza</option><option value="manicure_nail_designer">Manicure / Nail Designer</option><option value="clinica_odontologica">Clínicas odontológicas</option><option value="clinica_estetica">Clínicas de estética</option><option value="academia">Academias</option><option value="pet_shop">Pet shops</option><option value="veterinaria">Clínicas veterinárias</option><option value="restaurante">Restaurantes</option><option value="imobiliaria">Imobiliárias</option><option value="oficina_mecanica">Oficinas mecânicas</option><option value="escola_curso">Escolas / Cursos</option>
+          </select>
+        </label>
+        <label>Tipo
+          <select id="manual-type">
+            <option value="revenue">Prospecção</option>
+            <option value="demo">Demonstração</option>
+          </select>
+        </label>
+        <div id="manual-error" class="error hidden"></div>
+        <div class="manual-actions">
+          <button type="button" class="secondary" id="manual-cancel">Cancelar</button>
+          <button type="submit" class="primary" id="manual-submit">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <aside id="drawer" class="drawer" aria-hidden="true"><div class="drawer-backdrop" id="drawer-backdrop"></div><div class="drawer-panel"><button class="close" id="drawer-close" aria-label="Fechar">×</button><div id="drawer-content"></div></div></aside>
   <div id="loading" class="loading hidden"><div class="spinner"></div><span>Buscando empresas no Google Maps...</span></div>
 
@@ -106,6 +135,7 @@
   <script src="/automation-ui.js" defer></script>
   <script src="/approach-signals.js" defer></script>
   <script src="/pipeline.js" defer></script>
+  <script src="/manual-contact.js" defer></script>
   <script src="/revenue-ux.js" defer></script>
 </body>
 </html>
