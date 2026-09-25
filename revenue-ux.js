@@ -68,6 +68,15 @@
 
   let pollingInterval = null;
   let syncing = false;
+  const prospectingChannels = new Map();
+
+  function getProspectingChannel(leadId) {
+    return prospectingChannels.get(String(leadId)) || 'revenue';
+  }
+
+  function setProspectingChannel(leadId, channel) {
+    prospectingChannels.set(String(leadId), channel);
+  }
 
   async function apiProspecting(payload) {
     const res = await fetch('/api/prospecting', {
@@ -154,11 +163,22 @@
         }
         if (approachAnother) approachAnother.style.display = '';
         
-        ourActions.innerHTML = `<button class="primary" id="livia-prepare">Preparar demonstração</button>`;
+        const channel = getProspectingChannel(lead.id);
+        ourActions.innerHTML = `<label class="muted" for="livia-channel">Canal</label>
+          <select id="livia-channel"><option value="revenue">Revenue</option><option value="demo">Demonstração</option></select>
+          <button class="primary" id="livia-prepare">Preparar demonstração</button>`;
+        const channelSelect = document.getElementById('livia-channel');
+        channelSelect.value = channel;
+        channelSelect.addEventListener('change', () => {
+          setProspectingChannel(lead.id, channelSelect.value);
+          syncProspectingUI();
+        });
         document.getElementById('livia-prepare').addEventListener('click', async () => {
            const btn = document.getElementById('livia-prepare');
            btn.disabled = true; btn.textContent = 'Preparando...';
-           const payload = { action: 'prepare', leadId: String(lead.id), phone: lead.phone || '', businessName: lead.name || '', segment: lead.segment || '', initialManualMessage: approachMessage ? approachMessage.value.trim() : '' };
+           const selectedChannel = channelSelect.value;
+           setProspectingChannel(lead.id, selectedChannel);
+           const payload = { action: 'prepare', leadId: String(lead.id), phone: lead.phone || '', businessName: lead.name || '', segment: lead.segment || '', initialManualMessage: approachMessage ? approachMessage.value.trim() : '', ...(selectedChannel === 'demo' ? { channel: 'demo' } : {}) };
            try {
              const res = await apiProspecting(payload);
              if (res.status === 401) return;
@@ -170,7 +190,8 @@
         return;
       }
 
-      // Session exists
+    // Session exists
+      if (session.channel === 'demo') setProspectingChannel(lead.id, 'demo');
       statusSection.innerHTML = `<h3>Status da Lívia</h3>
         <div class="reason"><strong>${getStatusLabel(session.status)}</strong></div>
         <div class="muted">Atualizado em: ${new Date().toLocaleTimeString()}</div>`;
@@ -202,7 +223,7 @@
         document.getElementById('livia-confirm').addEventListener('click', async () => {
           document.getElementById('livia-confirm').disabled = true;
           try {
-            const res = await apiProspecting({ action: 'confirm_manual_send', normalizedPhone: session.normalizedPhone });
+            const res = await apiProspecting({ action: 'confirm_manual_send', normalizedPhone: session.normalizedPhone, ...(getProspectingChannel(lead.id) === 'demo' ? { channel: 'demo' } : {}) });
             if (res.status === 200 || res.status === 201) syncProspectingUI();
             else alert('Erro ao confirmar: ' + (res.data?.error || res.status));
           } catch(e) { alert('Falha de rede.'); }
@@ -211,7 +232,7 @@
         document.getElementById('livia-abort').addEventListener('click', async () => {
           document.getElementById('livia-abort').disabled = true;
           try {
-            const res = await apiProspecting({ action: 'abort', normalizedPhone: session.normalizedPhone });
+            const res = await apiProspecting({ action: 'abort', normalizedPhone: session.normalizedPhone, ...(getProspectingChannel(lead.id) === 'demo' ? { channel: 'demo' } : {}) });
             if (res.status === 200 || res.status === 201) syncProspectingUI();
             else alert('Erro ao cancelar: ' + (res.data?.error || res.status));
           } catch(e) { alert('Falha de rede.'); }
@@ -221,7 +242,8 @@
     };
 
     try {
-      const res = await apiProspecting({ action: 'get', leadId: String(lead.id) });
+      const channel = getProspectingChannel(lead.id);
+      const res = await apiProspecting({ action: 'get', leadId: String(lead.id), ...(channel === 'demo' ? { channel: 'demo' } : {}) });
       const session = res.status === 200 ? (res.data?.session ?? res.data) : null;
       updateUI(session);
       if (session && !isTerminalStatus(session.status)) {

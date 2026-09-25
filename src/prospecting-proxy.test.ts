@@ -98,6 +98,31 @@ test('prospecting proxy - prepare forwards POST correctly', async (t) => {
   const body = JSON.parse(fetchOptions.body);
   assert.equal(body.leadId, '1');
   assert.equal(body.initialManualMessage, '5');
+  assert.equal(body.channel, undefined);
+});
+
+test('prospecting proxy - demo channel is preserved for POST, GET, and PATCH', async () => {
+  setupEnv();
+  const calls: Array<{ url: string, options: any }> = [];
+  mock.method(globalThis, 'fetch', async (url: string, options: any) => {
+    calls.push({ url, options });
+    return {
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({})
+    };
+  });
+
+  const prepare = createMockReqRes({ action: 'prepare', leadId: '1', phone: '2', businessName: '3', segment: '4', initialManualMessage: '5', channel: 'demo' });
+  await handler(prepare.req as any, prepare.res as any);
+  const get = createMockReqRes({ action: 'get', leadId: '1', channel: 'demo' });
+  await handler(get.req as any, get.res as any);
+  const confirm = createMockReqRes({ action: 'confirm_manual_send', normalizedPhone: '5511999', channel: 'demo' });
+  await handler(confirm.req as any, confirm.res as any);
+
+  assert.equal(JSON.parse(calls[0].options.body).channel, 'demo');
+  assert.equal(calls[1].url, 'http://livia.test/api/internal/prospecting?leadId=1&channel=demo');
+  assert.deepEqual(JSON.parse(calls[2].options.body), { action: 'confirm_manual_send', channel: 'demo' });
 });
 
 test('prospecting proxy - confirm_manual_send forwards PATCH correctly', async (t) => {

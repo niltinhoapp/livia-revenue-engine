@@ -21,12 +21,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ ok: false, error: 'Internal configuration error' });
   }
 
-  const { action, leadId, phone, businessName, segment, initialManualMessage, normalizedPhone } = req.body || {};
+  const { action, leadId, phone, businessName, segment, initialManualMessage, normalizedPhone, channel } = req.body || {};
 
   // 3. VALIDATE ACTIONS AND FIELDS
   if (typeof action !== 'string' || !action) {
     return res.status(400).json({ ok: false, error: 'Invalid or missing action' });
   }
+
+  if (channel !== undefined && channel !== 'revenue' && channel !== 'demo') {
+    return res.status(400).json({ ok: false, error: 'Invalid channel' });
+  }
+
+  const isDemoChannel = channel === 'demo';
 
   let fetchUrl = '';
   let fetchMethod = '';
@@ -36,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (typeof leadId !== 'string' || !leadId) {
       return res.status(400).json({ ok: false, error: 'Missing leadId for get' });
     }
-    fetchUrl = `${liviaUrl}/api/internal/prospecting?leadId=${encodeURIComponent(leadId)}`;
+    fetchUrl = `${liviaUrl}/api/internal/prospecting?leadId=${encodeURIComponent(leadId)}${isDemoChannel ? '&channel=demo' : ''}`;
     fetchMethod = 'GET';
   } 
   else if (action === 'prepare') {
@@ -56,7 +62,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       phone,
       businessName,
       segment,
-      initialManualMessage
+      initialManualMessage,
+      ...(isDemoChannel ? { channel: 'demo' } : {})
     });
   } 
   else if (action === 'confirm_manual_send' || action === 'abort') {
@@ -65,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     fetchUrl = `${liviaUrl}/api/internal/prospecting/${encodeURIComponent(normalizedPhone)}`;
     fetchMethod = 'PATCH';
-    fetchBody = JSON.stringify({ action });
+    fetchBody = JSON.stringify({ action, ...(isDemoChannel ? { channel: 'demo' } : {}) });
   } 
   else {
     return res.status(400).json({ ok: false, error: 'Unknown action' });
