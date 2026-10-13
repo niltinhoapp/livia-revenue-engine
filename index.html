@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Livia Revenue Engine</title>
-  <meta name="description" content="Painel interno de prospecção da ConectWeb." />
+  <meta name="description" content="Painel interno de inteligência comercial da ConectWeb." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -18,26 +18,141 @@
         <div class="brand-text"><strong>Livia</strong><span>Revenue Engine</span></div>
       </div>
       <nav class="sidebar-nav">
-        <button class="nav-item active" type="button" data-view="prospeccao"><span class="nav-ico">◎</span> Prospecção</button>
+        <button class="nav-item active" type="button" data-view="radar"><span class="nav-ico">🎯</span> Radar <span class="badge-new">2.0</span></button>
+        <button class="nav-item" type="button" data-view="prospeccao"><span class="nav-ico">📍</span> Busca no Maps</button>
         <button class="nav-item" type="button" data-view="pipeline"><span class="nav-ico">▤</span> Pipeline</button>
       </nav>
-      <div class="sidebar-foot"><span class="sidebar-version">v0.1 · uso interno</span></div>
+      <div class="sidebar-foot"><span class="sidebar-version">v2.0 · uso interno</span></div>
     </aside>
 
     <div class="app-main">
       <header class="topbar">
         <div class="topbar-heading">
           <div class="eyebrow">CONECTWEB · REVENUE ENGINE</div>
-          <h1 id="view-title">Prospecção</h1>
-          <p id="view-subtitle">Encontre, qualifique e organize seus próximos clientes da Livia.</p>
+          <h1 id="view-title">Radar de Oportunidades 2.0</h1>
+          <p id="view-subtitle">Inteligência comercial orientada por dor real e manifestações públicas de compra.</p>
         </div>
         <div class="topbar-actions"><div class="status-pill"><span></span> Online</div><button id="logout-btn" class="logout-btn" type="button">Sair</button></div>
       </header>
 
       <main class="content">
-        <div class="view active" id="view-prospeccao">
+        <!-- VIEW: RADAR DE OPORTUNIDADES 2.0 -->
+        <div class="view active" id="view-radar">
           <section class="card search-card">
-            <div class="section-heading"><div><h2>Nova prospecção</h2><p>Escolha o nicho, a cidade e quantas empresas deseja buscar.</p></div></div>
+            <div class="section-heading">
+              <div>
+                <h2>Varredura de Sinais de Intenção</h2>
+                <p>Identifique empresários que declararam busca por agendamento, atendimento no WhatsApp ou perda de clientes em fontes públicas (Reddit, Google Notícias, etc.).</p>
+              </div>
+            </div>
+
+            <form id="radar-search-form" class="search-form">
+              <label>Preset de intenção
+                <select id="radar-preset-select">
+                  <option value="sistema de agendamento barbearia OR salao atendimento WhatsApp" selected>🎯 Busca geral: Agendamento & WhatsApp (Salões/Barbearias)</option>
+                  <option value="perdendo clientes whatsapp">🚨 Dor explícita: "Perdendo clientes no WhatsApp"</option>
+                  <option value="não dou conta de responder whatsapp">⚠️ Sobrecarga: "Não dou conta de responder no WhatsApp"</option>
+                  <option value="sistema de agendamento barbearia">💈 Barbearias: "Sistema de agendamento barbearia"</option>
+                  <option value="sistema de agendamento salão">💇 Salões: "Sistema de agendamento salão de beleza"</option>
+                  <option value="app agendamento manicure">💅 Manicures: "App de agendamento para manicure/esmalteria"</option>
+                  <option value="recepcionista virtual whatsapp">🤖 Recepção: "Procuro recepcionista virtual"</option>
+                  <option value="preciso automatizar WhatsApp">⚡ Automação: "Preciso automatizar meu WhatsApp"</option>
+                </select>
+              </label>
+
+              <label>Termo específico / Customizado
+                <input id="radar-query-input" placeholder="Ou digite termos específicos..." value="sistema de agendamento barbearia OR salao atendimento WhatsApp" />
+              </label>
+
+              <label>Segmento prioritário
+                <select id="radar-segment-select">
+                  <option value="all" selected>Todos os segmentos</option>
+                  <option value="barbearia">Barbearias</option>
+                  <option value="salao_de_beleza">Salões de beleza</option>
+                  <option value="manicure_nail_designer">Manicure / Esmalteria</option>
+                  <option value="clinica_estetica">Clínicas de estética</option>
+                  <option value="clinica_odontologica">Clínicas odontológicas</option>
+                  <option value="clinica_medica">Clínicas médicas</option>
+                  <option value="restaurante">Restaurantes / Delivery</option>
+                </select>
+              </label>
+
+              <button id="radar-scan-btn" type="submit">Escanear Radar</button>
+            </form>
+
+            <div class="segments">
+              <span>Ações & Fontes:</span>
+              <span class="tag">Reddit público</span>
+              <span class="tag">Google Notícias PT-BR</span>
+              <span class="tag">GitHub público</span>
+              <button type="button" class="link-btn" id="radar-manual-signal-open">+ Analisar publicação ou link</button>
+            </div>
+
+            <div id="radar-limitations" class="radar-limitations-bar hidden"></div>
+            <div id="radar-error" class="error hidden"></div>
+          </section>
+
+          <section id="radar-summary" class="summary-grid">
+            <div class="metric"><span>Total no Radar</span><strong id="radar-metric-total">0</strong></div>
+            <div class="metric"><span>Oportunidades (Alta + Média)</span><strong id="radar-metric-qualified">0</strong></div>
+            <div class="metric"><span>Alta Intenção (Score 75+)</span><strong id="radar-metric-high">0</strong></div>
+            <div class="metric"><span>Barbearias & Salões</span><strong id="radar-metric-priority">0</strong></div>
+          </section>
+
+          <section id="radar-results" class="card results-card">
+            <div class="results-header">
+              <div>
+                <h2>Oportunidades Identificadas</h2>
+                <p id="radar-results-subtitle">Carregando oportunidades qualificadas...</p>
+              </div>
+              <div class="filters">
+                <select id="radar-filter-segment" aria-label="Filtrar segmento">
+                  <option value="all">Todos os segmentos</option>
+                  <option value="barbearia">Barbearias</option>
+                  <option value="salao_de_beleza">Salões de beleza</option>
+                  <option value="manicure_nail_designer">Manicures</option>
+                  <option value="clinica_estetica">Estética</option>
+                  <option value="servicos_locais">Serviços locais</option>
+                </select>
+                <select id="radar-filter-level" aria-label="Filtrar nível de intenção">
+                  <option value="all">Todas as intenções</option>
+                  <option value="HIGH">Alta intenção</option>
+                  <option value="MEDIUM">Média intenção</option>
+                  <option value="LOW">Baixa intenção</option>
+                </select>
+                <select id="radar-filter-status" aria-label="Filtrar status comercial">
+                  <option value="all">Todas as situações</option>
+                  <option value="NOVO">Novas</option>
+                  <option value="EM_ANALISE">Em análise</option>
+                  <option value="ABORDAGEM_APROVADA">Abordagem aprovada</option>
+                  <option value="CONTATADO">Contatadas</option>
+                  <option value="ENCAMINHADO_LIVIA">Encaminhadas p/ Lívia</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Problema & Publicação Original</th>
+                    <th>Segmento</th>
+                    <th>Intenção / Urgência</th>
+                    <th>Situação Comercial</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="radar-table-body"></tbody>
+              </table>
+            </div>
+            <div id="radar-empty" class="empty hidden">Nenhuma oportunidade corresponde aos filtros selecionados.</div>
+          </section>
+        </div>
+
+        <!-- VIEW: BUSCA NO GOOGLE MAPS (SECUNDÁRIA) -->
+        <div class="view" id="view-prospeccao">
+          <section class="card search-card">
+            <div class="section-heading"><div><h2>Busca por Local (Google Maps)</h2><p>Ferramenta secundária para varredura de volume em estabelecimentos cadastrados no Google Maps.</p></div></div>
             <form id="search-form" class="search-form">
               <label>ICP / Segmento
                 <select id="search-segment" name="segment">
@@ -68,10 +183,11 @@
           </section>
         </div>
 
+        <!-- VIEW: PIPELINE -->
         <div class="view" id="view-pipeline">
           <section class="card pipeline-card">
-            <div class="section-heading"><div><h2>Pipeline de prospecção</h2><p>Leads da última busca organizados por estágio do funil.</p></div></div>
-            <div id="pipeline-empty" class="empty">Faça uma busca em <strong>Prospecção</strong> para visualizar o funil.</div>
+            <div class="section-heading"><div><h2>Pipeline de prospecção</h2><p>Leads organizados por estágio do funil comercial.</p></div></div>
+            <div id="pipeline-empty" class="empty">Faça uma busca ou selecione uma oportunidade no Radar para visualizar o funil.</div>
             <div class="kanban" id="pipeline-board"></div>
           </section>
         </div>
@@ -79,6 +195,7 @@
     </div>
   </div>
 
+  <!-- AUTH GATE -->
   <div id="auth-gate" class="auth-gate">
     <div class="auth-card">
       <div class="auth-brand">
@@ -95,6 +212,7 @@
     </div>
   </div>
 
+  <!-- MODAL: MANUAL CONTACT -->
   <div id="manual-contact-modal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="manual-contact-title">
     <div class="modal-backdrop" id="manual-contact-backdrop"></div>
     <div class="modal-panel">
@@ -124,7 +242,45 @@
     </div>
   </div>
 
+  <!-- MODAL: ANALISAR SINAL MANUAL (RADAR) -->
+  <div id="manual-signal-modal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-backdrop" id="manual-signal-backdrop"></div>
+    <div class="modal-panel">
+      <button class="close" id="manual-signal-close" type="button" aria-label="Fechar" onclick="document.getElementById('manual-signal-modal').classList.add('hidden')">×</button>
+      <h2>Analisar Publicação ou Sinal</h2>
+      <p class="muted">Cole o link público e o texto de uma dúvida ou publicação (Instagram, Reddit, LinkedIn, grupo) para qualificação imediata.</p>
+      <form id="manual-signal-form" class="manual-form" autocomplete="off">
+        <label>Link / URL pública da publicação
+          <input id="manual-signal-url" type="url" placeholder="https://..." required />
+        </label>
+        <label>Texto da manifestação / relato do empresário
+          <textarea id="manual-signal-text" rows="4" placeholder="Ex.: Tenho uma barbearia e não dou conta de responder o WhatsApp..." style="border-radius:8px;border:1px solid #ccc;padding:10px;" required></textarea>
+        </label>
+        <label>Segmento (opcional)
+          <select id="manual-signal-segment">
+            <option value="barbearia">Barbearia</option>
+            <option value="salao_de_beleza">Salão de beleza</option>
+            <option value="manicure_nail_designer">Manicure / Esmalteria</option>
+            <option value="clinica_estetica">Estética</option>
+            <option value="clinica_odontologica">Odontologia</option>
+            <option value="servicos_locais">Serviços locais</option>
+          </select>
+        </label>
+        <div id="manual-signal-error" class="error hidden"></div>
+        <div class="manual-actions">
+          <button type="button" class="secondary" id="manual-signal-cancel">Cancelar</button>
+          <button type="submit" class="primary" id="manual-signal-submit">Qualificar no Radar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DRAWER: LEAD GOOGLE MAPS -->
   <aside id="drawer" class="drawer" aria-hidden="true"><div class="drawer-backdrop" id="drawer-backdrop"></div><div class="drawer-panel"><button class="close" id="drawer-close" aria-label="Fechar">×</button><div id="drawer-content"></div></div></aside>
+
+  <!-- DRAWER: OPORTUNIDADE RADAR 2.0 -->
+  <aside id="radar-drawer" class="drawer" aria-hidden="true"><div class="drawer-backdrop" id="radar-drawer-backdrop"></div><div class="drawer-panel"><button class="close" id="radar-drawer-close" aria-label="Fechar">×</button><div id="radar-drawer-content"></div></div></aside>
+
   <div id="loading" class="loading hidden"><div class="spinner"></div><span>Buscando empresas no Google Maps...</span></div>
 
   <script src="/auth-ui.js" defer></script>
@@ -137,5 +293,6 @@
   <script src="/pipeline.js" defer></script>
   <script src="/manual-contact.js" defer></script>
   <script src="/revenue-ux.js" defer></script>
+  <script src="/radar-ui.js" defer></script>
 </body>
 </html>

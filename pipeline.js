@@ -9,7 +9,8 @@
   if (!board) return;
 
   const VIEW_META = {
-    prospeccao: { title: 'Prospecção', subtitle: 'Encontre, qualifique e organize seus próximos clientes da Livia.' },
+    radar:      { title: 'Radar de Oportunidades 2.0', subtitle: 'Inteligência comercial orientada por dor real e manifestações públicas de compra.' },
+    prospeccao: { title: 'Busca no Google Maps', subtitle: 'Encontre estabelecimentos locais no Google Maps (busca secundária por volume).' },
     pipeline:   { title: 'Pipeline de prospecção', subtitle: 'Leads da última busca organizados por estágio do funil (visualização somente leitura).' },
   };
 
