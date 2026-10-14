@@ -81,10 +81,10 @@
             </form>
 
             <div class="segments">
-              <span>Ações & Fontes:</span>
-              <span class="tag">Reddit público</span>
-              <span class="tag">Google Notícias PT-BR</span>
-              <span class="tag">GitHub público</span>
+              <span>Fontes auditadas:</span>
+              <span class="tag">Reddit (Comunidades PME Brasil)</span>
+              <span class="tag">Google Notícias PME</span>
+              <span class="tag">Google Search (Custom CX)</span>
               <button type="button" class="link-btn" id="radar-manual-signal-open">+ Analisar publicação ou link</button>
             </div>
 
@@ -93,16 +93,37 @@
           </section>
 
           <section id="radar-summary" class="summary-grid">
-            <div class="metric"><span>Total no Radar</span><strong id="radar-metric-total">0</strong></div>
-            <div class="metric"><span>Oportunidades (Alta + Média)</span><strong id="radar-metric-qualified">0</strong></div>
+            <div class="metric"><span>Sinais Brutos Coletados</span><strong id="radar-metric-total">0</strong></div>
+            <div class="metric"><span>Oportunidades Qualificadas</span><strong id="radar-metric-qualified">0</strong></div>
             <div class="metric"><span>Alta Intenção (Score 75+)</span><strong id="radar-metric-high">0</strong></div>
-            <div class="metric"><span>Barbearias & Salões</span><strong id="radar-metric-priority">0</strong></div>
+            <div class="metric"><span>Descartados por Filtro</span><strong id="radar-metric-discarded">0</strong></div>
+          </section>
+
+          <!-- PAINEL DE AUDITORIA DE FONTES E MOTIVOS DE REJEIÇÃO -->
+          <section id="radar-audit-box" class="card radar-audit-card hidden">
+            <div class="section-heading">
+              <div>
+                <h3>Auditoria de Fontes & Motivos de Descarte</h3>
+                <p>Métricas transparentes por conector e regras de eliminação de falsos positivos.</p>
+              </div>
+            </div>
+            <div class="audit-metrics-grid" id="radar-audit-metrics"></div>
           </section>
 
           <section id="radar-results" class="card results-card">
-            <div class="results-header">
+            <!-- ABAS: OPORTUNIDADES VS AUDITORIA DE DESCARTES -->
+            <div class="radar-tabs-nav">
+              <button type="button" class="radar-tab-btn active" id="radar-tab-opps">
+                Oportunidades Comerciais (<span id="radar-tab-opps-count">0</span>)
+              </button>
+              <button type="button" class="radar-tab-btn" id="radar-tab-discarded">
+                Auditoria de Descartes (<span id="radar-tab-discarded-count">0</span>)
+              </button>
+            </div>
+
+            <div class="results-header" id="radar-filters-bar">
               <div>
-                <h2>Oportunidades Identificadas</h2>
+                <h2 id="radar-table-title">Oportunidades Identificadas</h2>
                 <p id="radar-results-subtitle">Carregando oportunidades qualificadas...</p>
               </div>
               <div class="filters">
@@ -131,11 +152,12 @@
               </div>
             </div>
 
-            <div class="table-wrap">
+            <!-- TABELA 1: OPORTUNIDADES QUALIFICADAS -->
+            <div class="table-wrap" id="radar-opps-container">
               <table>
                 <thead>
                   <tr>
-                    <th>Problema & Publicação Original</th>
+                    <th>Título Original & Trecho da Evidência</th>
                     <th>Segmento</th>
                     <th>Intenção / Urgência</th>
                     <th>Situação Comercial</th>
@@ -144,8 +166,24 @@
                 </thead>
                 <tbody id="radar-table-body"></tbody>
               </table>
+              <div id="radar-empty" class="empty hidden">Nenhuma oportunidade qualificada corresponde aos filtros selecionados.</div>
             </div>
-            <div id="radar-empty" class="empty hidden">Nenhuma oportunidade corresponde aos filtros selecionados.</div>
+
+            <!-- TABELA 2: AUDITORIA DE DESCARTES -->
+            <div class="table-wrap hidden" id="radar-discarded-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Publicação Original Descartada</th>
+                    <th>Fonte</th>
+                    <th>Motivo de Rejeição</th>
+                    <th>Justificativa do Filtro</th>
+                  </tr>
+                </thead>
+                <tbody id="radar-discarded-body"></tbody>
+              </table>
+              <div id="radar-discarded-empty" class="empty hidden">Nenhum sinal descartado registrado na última busca.</div>
+            </div>
           </section>
         </div>
 

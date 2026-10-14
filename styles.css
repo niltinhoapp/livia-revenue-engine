@@ -293,3 +293,32 @@ tr.demo-row .origin-tag{color:var(--warn);background:var(--warn-bg)}
 .radar-forward-box{margin-top:12px;padding:12px;border-radius:var(--r);background:var(--brand-50);border:1px solid rgba(79,70,229,.2)}
 .radar-forward-box h4{margin:0 0 4px;font-size:12.5px;color:var(--brand-700)}
 
+/* Novas melhorias de transparência e auditoria */
+.radar-evidence-highlight{margin-top:5px;padding:6px 10px;background:#f0fdf4;border-left:3px solid var(--success);border-radius:4px;font-size:12px;line-height:1.4}
+.radar-evidence-highlight .evidence-icon{font-weight:700;color:var(--success);display:block;margin-bottom:2px}
+.radar-evidence-highlight .evidence-text{color:#166534;font-style:italic}
+.radar-problem-detail{margin-top:4px;font-size:11.5px;color:var(--text-muted)}
+
+.radar-tabs-nav{display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+.radar-tab-btn{background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:.15s}
+.radar-tab-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.radar-tab-btn:hover:not(.active){background:var(--surface-2);color:var(--text)}
+
+.radar-audit-card{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.radar-audit-card h3{font-size:14px;margin:0 0 4px}
+.audit-metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px}
+.audit-metric-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.audit-metric-card span{display:block;font-size:11px;color:var(--text-muted);font-weight:600}
+.audit-metric-card strong{font-size:16px;color:var(--text);display:block;margin-top:2px}
+.audit-metric-card small{font-size:10.5px;color:var(--text-subtle)}
+
+.rejection-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700}
+.rejection-tech_or_devops{background:#f3f4f6;color:#4b5563;border:1px solid #d1d5db}
+.rejection-vendor_or_seller{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.rejection-consumer_complaint{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.rejection-job_or_recruitment{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.rejection-foreign_language{background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe}
+.rejection-no_business_link{background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8}
+.rejection-no_solution_fit{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+
+

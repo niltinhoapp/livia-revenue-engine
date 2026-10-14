@@ -11,6 +11,11 @@
   const state = {
     opportunities: [],
     filtered: [],
+    discarded: [],
+    metricsBySource: {},
+    rejectionBreakdown: {},
+    totalCollected: 0,
+    activeTab: 'opps',
     currentId: null,
     isScanning: false,
     sourcesQueried: [],
@@ -51,6 +56,21 @@
     LOW: 'ℹ️ Informativa',
   };
 
+  const rejectionLabels = {
+    TECH_OR_DEVOPS: '💻 Código / DevOps / Infra',
+    VENDOR_OR_SELLER: '📢 Fornecedor / Anúncio / Curso',
+    JOB_OR_RECRUITMENT: '👔 Vaga de Emprego / RH',
+    CONSUMER_COMPLAINT: '🗣️ Reclamação de Consumidor',
+    ACADEMIC_OR_STUDENT: '🎓 Estudante / Faculdade',
+    FOREIGN_LANGUAGE: '🌐 Idioma Estrangeiro',
+    NO_BUSINESS_LINK: '👤 Sem Vínculo de Estabelecimento',
+    NO_SOLUTION_FIT: '❓ Sem Aderência à Lívia',
+    NO_COMMERCIAL_NEED: '🔍 Sem Necessidade Comercial',
+    INVALID_URL: '🚫 Link Inválido ou Restrito',
+    TEXT_TOO_SHORT: '📝 Texto Insuficiente',
+    OUTROS: '⚪ Filtro Geral',
+  };
+
   function escapeHtml(val) {
     return String(val ?? '').replace(/[&<>'"]/g, (c) => ({
       '&': '&amp;',
@@ -64,7 +84,9 @@
   function readStoredOpportunities() {
     try {
       const data = JSON.parse(localStorage.getItem(RADAR_STORAGE_KEY) || '[]');
-      return Array.isArray(data) ? data : [];
+      if (!Array.isArray(data)) return [];
+      // Filtra registros descartados ou sem qualificação para não poluir
+      return data.filter((item) => item && item.level && item.level !== 'NONE');
     } catch {
       return [];
     }
@@ -72,7 +94,8 @@
 
   function writeStoredOpportunities(list) {
     try {
-      localStorage.setItem(RADAR_STORAGE_KEY, JSON.stringify(list));
+      const cleanList = (list || []).filter((item) => item && item.level && item.level !== 'NONE');
+      localStorage.setItem(RADAR_STORAGE_KEY, JSON.stringify(cleanList));
     } catch (e) {
       console.warn('Erro ao salvar oportunidades no localStorage:', e);
     }
@@ -110,11 +133,12 @@
   }
 
   function mergeOpportunities(incoming) {
+    // Apenas oportunidades qualificadas (HIGH, MEDIUM, LOW)
+    const validIncoming = (incoming || []).filter((item) => item && item.level && item.level !== 'NONE');
     const existingMap = new Map(state.opportunities.map((o) => [o.sourceUrl, o]));
 
-    for (const item of incoming) {
+    for (const item of validIncoming) {
       if (existingMap.has(item.sourceUrl)) {
-        // Preserva status e anotações já feitas
         const prev = existingMap.get(item.sourceUrl);
         existingMap.set(item.sourceUrl, {
           ...item,
@@ -129,6 +153,34 @@
 
     state.opportunities = Array.from(existingMap.values());
     writeStoredOpportunities(state.opportunities);
+  }
+
+  function switchTab(tabName) {
+    state.activeTab = tabName;
+
+    const tabOpps = document.getElementById('radar-tab-opps');
+    const tabDiscarded = document.getElementById('radar-tab-discarded');
+    const oppsContainer = document.getElementById('radar-opps-container');
+    const discardedContainer = document.getElementById('radar-discarded-container');
+    const filtersBar = document.getElementById('radar-filters-bar');
+    const titleEl = document.getElementById('radar-table-title');
+
+    if (tabName === 'opps') {
+      if (tabOpps) tabOpps.classList.add('active');
+      if (tabDiscarded) tabDiscarded.classList.remove('active');
+      if (oppsContainer) oppsContainer.classList.remove('hidden');
+      if (discardedContainer) discardedContainer.classList.add('hidden');
+      if (filtersBar) filtersBar.classList.remove('hidden');
+      if (titleEl) titleEl.textContent = 'Oportunidades Comerciais Identificadas';
+    } else {
+      if (tabOpps) tabOpps.classList.remove('active');
+      if (tabDiscarded) tabDiscarded.classList.add('active');
+      if (oppsContainer) oppsContainer.classList.add('hidden');
+      if (discardedContainer) discardedContainer.classList.remove('hidden');
+      if (titleEl) titleEl.textContent = 'Auditoria de Sinais Descartados (Filtro Anti-Ruído)';
+    }
+
+    renderTable();
   }
 
   function filterAndSort() {
@@ -152,29 +204,90 @@
     });
 
     renderMetrics();
+    renderAuditBox();
     renderTable();
   }
 
   function renderMetrics() {
-    const total = state.opportunities.length;
+    const totalOpps = state.opportunities.length;
     const high = state.opportunities.filter((o) => o.level === 'HIGH').length;
     const medium = state.opportunities.filter((o) => o.level === 'MEDIUM').length;
-    const priority = state.opportunities.filter((o) =>
-      ['barbearia', 'salao_de_beleza', 'manicure_nail_designer'].includes(o.segment),
-    ).length;
+    const discardedCount = state.discarded.length;
+    const totalCollected = state.totalCollected || (totalOpps + discardedCount);
 
     const elTotal = document.getElementById('radar-metric-total');
     const elQualified = document.getElementById('radar-metric-qualified');
     const elHigh = document.getElementById('radar-metric-high');
-    const elPriority = document.getElementById('radar-metric-priority');
+    const elDiscarded = document.getElementById('radar-metric-discarded');
 
-    if (elTotal) elTotal.textContent = String(total);
+    const tabOppsCount = document.getElementById('radar-tab-opps-count');
+    const tabDiscardedCount = document.getElementById('radar-tab-discarded-count');
+
+    if (elTotal) elTotal.textContent = String(totalCollected);
     if (elQualified) elQualified.textContent = String(high + medium);
     if (elHigh) elHigh.textContent = String(high);
-    if (elPriority) elPriority.textContent = String(priority);
+    if (elDiscarded) elDiscarded.textContent = String(discardedCount);
+
+    if (tabOppsCount) tabOppsCount.textContent = String(totalOpps);
+    if (tabDiscardedCount) tabDiscardedCount.textContent = String(discardedCount);
+  }
+
+  function renderAuditBox() {
+    const auditBox = document.getElementById('radar-audit-box');
+    const metricsGrid = document.getElementById('radar-audit-metrics');
+    if (!auditBox || !metricsGrid) return;
+
+    const sources = Object.values(state.metricsBySource || {});
+    const rejections = Object.entries(state.rejectionBreakdown || {});
+
+    if (!sources.length && !rejections.length) {
+      auditBox.classList.add('hidden');
+      return;
+    }
+
+    auditBox.classList.remove('hidden');
+
+    let html = '';
+
+    // Cards por conector
+    for (const src of sources) {
+      html += `
+        <div class="audit-metric-card">
+          <span>${escapeHtml(src.sourceName)}</span>
+          <strong>${Number(src.qualified || 0)} qualificados</strong>
+          <small>${Number(src.collected || 0)} capturados · ${Number(src.discarded || 0)} descartados</small>
+        </div>
+      `;
+    }
+
+    // Card de motivos de descarte principais
+    if (rejections.length) {
+      const topRejections = rejections
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4)
+        .map(([cat, count]) => `
+          <div style="margin-top:3px;font-size:11px;">
+            <span class="rejection-badge rejection-${cat.toLowerCase()}">${escapeHtml(rejectionLabels[cat] || cat)}</span>: <strong>${count}</strong>
+          </div>
+        `).join('');
+
+      html += `
+        <div class="audit-metric-card" style="grid-column: span 2;">
+          <span>Principais Motivos de Eliminação</span>
+          <div style="margin-top:6px;">${topRejections}</div>
+        </div>
+      `;
+    }
+
+    metricsGrid.innerHTML = html;
   }
 
   function renderTable() {
+    if (state.activeTab === 'discarded') {
+      renderDiscardedTable();
+      return;
+    }
+
     const tableBody = document.getElementById('radar-table-body');
     const emptyEl = document.getElementById('radar-empty');
     const countSub = document.getElementById('radar-results-subtitle');
@@ -182,7 +295,7 @@
     if (!tableBody) return;
 
     if (countSub) {
-      countSub.textContent = `${state.filtered.length} oportunidade${state.filtered.length === 1 ? '' : 's'} exibida${state.filtered.length === 1 ? '' : 's'} · ${state.opportunities.length} no total acumulado`;
+      countSub.textContent = `${state.filtered.length} oportunidade${state.filtered.length === 1 ? '' : 's'} qualificada${state.filtered.length === 1 ? '' : 's'} exibida${state.filtered.length === 1 ? '' : 's'} · ${state.opportunities.length} no total acumulado`;
     }
 
     if (!state.filtered.length) {
@@ -197,16 +310,25 @@
       const levelClass = op.level === 'HIGH' ? 'score-high' : op.level === 'MEDIUM' ? 'score-medium' : 'score-low';
       const statusClass = `status-${String(op.commercialStatus || 'novo').toLowerCase()}`;
       const isPrioritySeg = ['barbearia', 'salao_de_beleza', 'manicure_nail_designer'].includes(op.segment);
+      const displayTitle = op.title || op.problemDescription || 'Publicação sem título';
+      const evidenceSnippet = op.exactEvidenceSnippet || op.snippet;
 
       return `
         <tr class="radar-row ${isPrioritySeg ? 'priority-seg-row' : ''}">
           <td>
-            <div class="company">${escapeHtml(op.problemDescription)}</div>
-            <div class="muted snippet-preview">${escapeHtml(op.snippet)}</div>
+            <div class="company">${escapeHtml(displayTitle)}</div>
+            <div class="radar-evidence-highlight">
+              <span class="evidence-icon">🎯 Evidência de intenção:</span>
+              <span class="evidence-text">"${escapeHtml(evidenceSnippet)}"</span>
+            </div>
+            <div class="radar-problem-detail">
+              <strong>Diagnóstico:</strong> ${escapeHtml(op.problemDescription)}
+            </div>
             <div class="radar-meta-row">
               <span class="radar-source-tag">${escapeHtml(op.source || 'Fonte pública')}</span>
               <a href="${escapeHtml(op.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="radar-source-link">Abrir publicação original ↗</a>
               <span class="muted">· ${escapeHtml(formatDate(op.publishedAt))}</span>
+              ${op.author ? `<span class="muted">· Autor: @${escapeHtml(op.author)}</span>` : ''}
             </div>
           </td>
           <td>
@@ -238,6 +360,52 @@
     }).join('');
   }
 
+  function renderDiscardedTable() {
+    const tableBody = document.getElementById('radar-discarded-body');
+    const emptyEl = document.getElementById('radar-discarded-empty');
+    const countSub = document.getElementById('radar-results-subtitle');
+
+    if (!tableBody) return;
+
+    if (countSub) {
+      countSub.textContent = `${state.discarded.length} sinal(is) descartado(s) pelo filtro anti-ruído na última busca.`;
+    }
+
+    if (!state.discarded.length) {
+      tableBody.innerHTML = '';
+      if (emptyEl) emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    if (emptyEl) emptyEl.classList.add('hidden');
+
+    tableBody.innerHTML = state.discarded.map((item) => {
+      const catClass = `rejection-${String(item.rejectionCategory || 'outros').toLowerCase()}`;
+      const catLabel = rejectionLabels[item.rejectionCategory] || item.rejectionCategory || 'Descarte';
+
+      return `
+        <tr class="radar-discard-row">
+          <td>
+            <div class="company" style="font-size:13px;">${escapeHtml(item.title || item.snippet.slice(0, 70))}</div>
+            <div class="muted snippet-preview" style="font-size:11.5px;">${escapeHtml(item.snippet)}</div>
+            <div style="margin-top:4px;">
+              <a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="radar-source-link">Abrir publicação original ↗</a>
+            </div>
+          </td>
+          <td>
+            <span class="radar-source-tag">${escapeHtml(item.source || 'Fonte pública')}</span>
+          </td>
+          <td>
+            <span class="rejection-badge ${catClass}">${escapeHtml(catLabel)}</span>
+          </td>
+          <td class="muted" style="font-size:11.5px;max-width:260px;">
+            ${escapeHtml(item.rejectionReason || 'Não atendeu aos requisitos mínimos de compra.')}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   function openOpportunityDrawer(id) {
     const op = state.opportunities.find((o) => o.id === id);
     if (!op) return;
@@ -261,12 +429,14 @@
 
     const evidenceHtml = (op.evidence || []).map((e) => `<div class="radar-evidence-tag">✓ ${escapeHtml(e)}</div>`).join('');
     const blockersHtml = (op.blockers || []).map((b) => `<div class="radar-blocker-tag">⚠️ ${escapeHtml(b)}</div>`).join('');
+    const displayTitle = op.title || op.problemDescription || 'Publicação original';
+    const evidenceSnippet = op.exactEvidenceSnippet || op.snippet;
 
     content.innerHTML = `
       <div class="detail-eyebrow">
         Oportunidade Radar · ${escapeHtml(levelLabels[op.level] || op.level)} · Score ${Number(op.score || 0)}
       </div>
-      <h2 class="detail-title">${escapeHtml(op.problemDescription)}</h2>
+      <h2 class="detail-title">${escapeHtml(displayTitle)}</h2>
 
       <div class="detail-grid">
         <div class="detail-item">
@@ -288,7 +458,16 @@
       </div>
 
       <div class="detail-section">
+        <h3>Trecho Exato da Evidência</h3>
+        <div class="radar-evidence-highlight" style="padding:10px 14px;font-size:13px;">
+          <span class="evidence-icon">🎯 Frase identificada pelo Radar:</span>
+          <span class="evidence-text">"${escapeHtml(evidenceSnippet)}"</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
         <h3>Diagnóstico & Aderência à Lívia</h3>
+        <p class="approach-help"><strong>Problema factual:</strong> ${escapeHtml(op.problemDescription)}</p>
         <p class="approach-help"><strong>Como a Lívia atende:</strong> ${escapeHtml(op.fitWithLivia)}</p>
         <p class="approach-help"><strong>Vínculo do estabelecimento:</strong> ${escapeHtml(op.businessEvidence)}</p>
         <div class="radar-tags-container">
@@ -298,7 +477,7 @@
       </div>
 
       <div class="detail-section">
-        <h3>Publicação Original Verificada</h3>
+        <h3>Texto Completo da Publicação</h3>
         <div class="message-box">${escapeHtml(op.snippet)}</div>
         <div class="detail-actions" style="margin-top: 10px;">
           <a class="secondary" href="${escapeHtml(op.sourceUrl)}" target="_blank" rel="noopener noreferrer">
@@ -309,7 +488,7 @@
 
       <div class="detail-section">
         <h3>Abordagem Personalizada Recomendada</h3>
-        <p class="approach-help">Mensagem sob medida com base na dor identificada. Revise antes de interagir (sem disparos em massa).</p>
+        <p class="approach-help">Mensagem consultiva sob medida baseada na dor verificada. Revise antes de interagir (sem disparos em massa).</p>
         <textarea id="radar-pitch-text" class="approach-message" maxlength="600">${escapeHtml(op.suggestedApproach)}</textarea>
         <div class="detail-actions" style="margin-top: 10px;">
           <button class="primary" type="button" id="radar-copy-pitch">Copiar abordagem</button>
@@ -410,7 +589,7 @@
               action: 'prepare',
               leadId: op.id,
               phone,
-              businessName: op.author || op.problemDescription.slice(0, 40),
+              businessName: op.author || op.title || op.problemDescription.slice(0, 40),
               segment: op.segment || 'barbearia',
               initialManualMessage: pitchText ? pitchText.value.trim() : op.suggestedApproach,
             }),
@@ -475,7 +654,7 @@
           query: query || undefined,
           segment,
           limit: 15,
-          includeLowAndDiscarded: true,
+          includeLowAndDiscarded: false, // Oportunidades são estritamente separadas de descartados
         }),
       });
 
@@ -486,17 +665,22 @@
 
       state.sourcesQueried = data.queriedSources || [];
       state.limitations = data.sourceLimitations || [];
+      state.totalCollected = data.totalSignalsCollected || 0;
+      state.metricsBySource = data.metricsBySource || {};
+      state.rejectionBreakdown = data.rejectionBreakdown || {};
+      state.discarded = Array.isArray(data.discardedAudit) ? data.discardedAudit : [];
 
       if (limitationEl) {
         if (state.limitations.length) {
           limitationEl.textContent = `Fontes consultadas: ${state.sourcesQueried.join(', ')}. Observação: ${state.limitations.join(' · ')}`;
           limitationEl.classList.remove('hidden');
         } else {
-          limitationEl.textContent = `Fontes ativas e verificadas: ${state.sourcesQueried.join(', ')}.`;
+          limitationEl.textContent = `Fontes auditadas e ativas: ${state.sourcesQueried.join(', ')}.`;
           limitationEl.classList.remove('hidden');
         }
       }
 
+      // Adiciona apenas as qualificadas
       if (Array.isArray(data.opportunities)) {
         mergeOpportunities(data.opportunities);
       }
@@ -558,7 +742,7 @@
       if (urlInput) urlInput.value = '';
       if (errorEl) errorEl.classList.add('hidden');
 
-      if (data.results[0]?.id) {
+      if (data.results[0]?.id && data.results[0]?.level !== 'NONE') {
         openOpportunityDrawer(data.results[0].id);
       }
     } catch (err) {
@@ -572,7 +756,7 @@
   function init() {
     state.opportunities = readStoredOpportunities();
 
-    // Preset selector synchronization
+    // Sincronização dos presets
     const presetSelect = document.getElementById('radar-preset-select');
     const queryInput = document.getElementById('radar-query-input');
     if (presetSelect && queryInput) {
@@ -583,15 +767,19 @@
       });
     }
 
-    // Filter bindings
+    // Tabs
+    document.getElementById('radar-tab-opps')?.addEventListener('click', () => switchTab('opps'));
+    document.getElementById('radar-tab-discarded')?.addEventListener('click', () => switchTab('discarded'));
+
+    // Filtros
     document.getElementById('radar-filter-segment')?.addEventListener('change', filterAndSort);
     document.getElementById('radar-filter-level')?.addEventListener('change', filterAndSort);
     document.getElementById('radar-filter-status')?.addEventListener('change', filterAndSort);
 
-    // Form submit
+    // Formulário de busca
     document.getElementById('radar-search-form')?.addEventListener('submit', handleScanSubmit);
 
-    // Table click delegation
+    // Delegação de cliques na tabela
     document.getElementById('radar-table-body')?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-opp-id]');
       if (btn) {
@@ -599,33 +787,20 @@
       }
     });
 
-    // Drawer close buttons
+    // Drawer close
     document.getElementById('radar-drawer-close')?.addEventListener('click', closeRadarDrawer);
     document.getElementById('radar-drawer-backdrop')?.addEventListener('click', closeRadarDrawer);
 
-    // Manual Signal Modal
-    const manualBtn = document.getElementById('radar-manual-signal-open');
-    const modal = document.getElementById('manual-signal-modal');
-    const cancelBtn = document.getElementById('manual-signal-cancel');
-    const modalBackdrop = document.getElementById('manual-signal-backdrop');
+    // Modal de sinal manual
+    document.getElementById('radar-manual-signal-open')?.addEventListener('click', () => {
+      const modal = document.getElementById('manual-signal-modal');
+      if (modal) modal.classList.remove('hidden');
+    });
 
-    if (manualBtn && modal) {
-      manualBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-    }
-    if (cancelBtn && modal) {
-      cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
-    }
-    if (modalBackdrop && modal) {
-      modalBackdrop.addEventListener('click', () => modal.classList.add('hidden'));
-    }
     document.getElementById('manual-signal-form')?.addEventListener('submit', handleManualSignalSubmit);
 
+    // Render inicial
     filterAndSort();
-
-    // Auto-scan initial preset if empty
-    if (!state.opportunities.length) {
-      handleScanSubmit();
-    }
   }
 
   if (document.readyState === 'loading') {
@@ -634,10 +809,14 @@
     init();
   }
 
+  // Exportação para testes
   window.RadarUi = {
     state,
     filterAndSort,
+    switchTab,
     handleScanSubmit,
     openOpportunityDrawer,
+    closeRadarDrawer,
+    mergeOpportunities,
   };
 })();

@@ -108,3 +108,51 @@ test('curiosidade sem vínculo de negócio fica como LOW/WATCH', () => {
   assert.equal(result.decision, 'WATCH');
   assert.equal(result.intentType, 'CURIOSITY');
 });
+
+test('publicação técnica de DevOps, GitHub ou código é descartada com TECH_OR_DEVOPS', () => {
+  const result = assessIntent({
+    sourceUrl: 'https://github.com/empresa/repo/issues/1',
+    text: 'Como configurar webhook de atendimento WhatsApp com Docker e n8n em uma VPS Linux?'
+  });
+  assert.equal(result.level, 'NONE');
+  assert.equal(result.decision, 'DISCARD');
+  assert.equal(result.rejectionCategory, 'TECH_OR_DEVOPS');
+  assert.ok(result.rejectionReason?.includes('código'));
+});
+
+test('anúncio de vaga de emprego é descartado com JOB_OR_RECRUITMENT', () => {
+  const result = assessIntent({
+    sourceUrl: 'https://vagas.com/123',
+    text: 'Vaga - Atendente de barbearia para WhatsApp e recepção em Curitiba. Enviar currículo.'
+  });
+  assert.equal(result.level, 'NONE');
+  assert.equal(result.rejectionCategory, 'JOB_OR_RECRUITMENT');
+});
+
+test('termo em espanhol com falso cognato salao é descartado com FOREIGN_LANGUAGE', () => {
+  const result = assessIntent({
+    sourceUrl: 'https://reddit.com/r/chile/123',
+    text: 'Me salio muy salao el arreglo de mi coche, una experiencia sobre el servicio pésimo.'
+  });
+  assert.equal(result.level, 'NONE');
+  assert.equal(result.rejectionCategory, 'FOREIGN_LANGUAGE');
+});
+
+test('extrai o trecho exato que fundamentou a classificação de comprador com dor', () => {
+  const fullText = 'Boa tarde pessoal do grupo. Comecei meu negócio ano passado. Sou barbeiro e tenho minha barbearia no centro. Estou perdendo clientes porque não dou conta de responder o WhatsApp nos horários de pico. Alguém indica um sistema de agendamento que funcione bem? Obrigado a todos.';
+  const result = assessIntent({
+    sourceUrl: 'https://reddit.com/r/empreendedorismo/123',
+    text: fullText,
+    title: 'Perdendo clientes na barbearia'
+  });
+  assert.equal(result.level, 'HIGH');
+  assert.equal(result.title, 'Perdendo clientes na barbearia');
+  assert.ok(result.exactEvidenceSnippet);
+  assert.ok(
+    result.exactEvidenceSnippet.includes('perdendo clientes') ||
+    result.exactEvidenceSnippet.includes('responder o WhatsApp') ||
+    result.exactEvidenceSnippet.includes('barbearia')
+  );
+});
+
+

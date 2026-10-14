@@ -290,6 +290,16 @@ export class GoogleSearchConnector implements IntentSearchConnector {
   }
 }
 
+export interface SourceMetrics {
+  sourceId: string;
+  sourceName: string;
+  collected: number;
+  qualified: number;
+  discarded: number;
+  rejectionReasons: Record<string, number>;
+  limitation?: string;
+}
+
 export interface RadarScanOptions {
   query?: string;
   segment?: string;
@@ -310,7 +320,10 @@ export interface RadarScanSummary {
   mediumIntentCount: number;
   lowIntentCount: number;
   discardedCount: number;
+  metricsBySource: Record<string, SourceMetrics>;
+  rejectionBreakdown: Record<string, number>;
   opportunities: IntentAssessment[];
+  discardedAudit: IntentAssessment[];
   sourceLimitations: string[];
   queriedSources: string[];
   collectedAt: string;
@@ -355,10 +368,11 @@ export async function scanRadarOpportunities(options: RadarScanOptions = {}): Pr
   const query = (options.query || 'sistema de agendamento barbearia OR salao atendimento WhatsApp').trim();
   const limit = options.limitPerConnector || 15;
 
+  // Conectores padrão voltados para pequenos estabelecimentos comerciais e comunidades públicas no Brasil
+  // GitHubDiscussionsConnector foi removido dos padrões para não poluir com repositórios e infraestrutura dev
   const defaultConnectors: IntentSearchConnector[] = [
     new PullpushRedditConnector(),
     new GoogleNewsConnector(),
-    new GitHubDiscussionsConnector(),
     new GoogleSearchConnector(),
   ];
 
@@ -366,11 +380,14 @@ export async function scanRadarOpportunities(options: RadarScanOptions = {}): Pr
   const sourceLimitations: string[] = [];
   const queriedSources: string[] = [];
   const collectedSignals: IntentSignal[] = [...(options.customSignals || [])];
+  const sourceSignalsMap = new Map<string, IntentSignal[]>();
 
   const results = await Promise.allSettled(
     connectors.map(async (c) => {
       queriedSources.push(c.name);
-      return c.search(query, limit);
+      const res = await c.search(query, limit);
+      sourceSignalsMap.set(c.id, res.signals);
+      return res;
     }),
   );
 
@@ -387,7 +404,7 @@ export async function scanRadarOpportunities(options: RadarScanOptions = {}): Pr
 
   const uniqueSignals = deduplicateSignals(collectedSignals);
 
-  // Qualify & score each signal deterministically
+  // Qualificação determinística
   const assessed = uniqueSignals.map((signal) => {
     if (options.segment && !signal.segment) {
       signal.segment = options.segment;
@@ -395,7 +412,7 @@ export async function scanRadarOpportunities(options: RadarScanOptions = {}): Pr
     return assessIntent(signal);
   });
 
-  // Sort: HIGH first, then MEDIUM, then LOW. Higher scores first, higher urgency first.
+  // Ordenação: HIGH > MEDIUM > LOW. Maior score primeiro, maior urgência primeiro.
   const levelRank: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1, NONE: 0 };
   const urgencyRank: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
 
@@ -416,9 +433,43 @@ export async function scanRadarOpportunities(options: RadarScanOptions = {}): Pr
   const low = assessed.filter((a) => a.level === 'LOW');
   const none = assessed.filter((a) => a.level === 'NONE');
 
-  const filteredOpportunities = options.includeLowAndDiscarded
-    ? assessed
-    : assessed.filter((a) => a.level !== 'NONE');
+  // Métricas agregadas por fonte e motivos de descarte
+  const metricsBySource: Record<string, SourceMetrics> = {};
+  const rejectionBreakdown: Record<string, number> = {};
+
+  for (const item of none) {
+    const reasonKey = item.rejectionCategory || 'OUTROS';
+    rejectionBreakdown[reasonKey] = (rejectionBreakdown[reasonKey] || 0) + 1;
+  }
+
+  for (const c of connectors) {
+    const rawSigs = sourceSignalsMap.get(c.id) || [];
+    const sourceUrls = new Set(rawSigs.map((s) => normalizeUrl(s.sourceUrl)));
+    const sourceAssessed = assessed.filter((a) => sourceUrls.has(normalizeUrl(a.sourceUrl)));
+
+    const srcQualified = sourceAssessed.filter((a) => a.level === 'HIGH' || a.level === 'MEDIUM').length;
+    const srcDiscarded = sourceAssessed.filter((a) => a.level === 'NONE').length;
+    const srcRejections: Record<string, number> = {};
+
+    for (const d of sourceAssessed.filter((a) => a.level === 'NONE')) {
+      const cat = d.rejectionCategory || 'OUTROS';
+      srcRejections[cat] = (srcRejections[cat] || 0) + 1;
+    }
+
+    metricsBySource[c.id] = {
+      sourceId: c.id,
+      sourceName: c.name,
+      collected: rawSigs.length,
+      qualified: srcQualified,
+      discarded: srcDiscarded,
+      rejectionReasons: srcRejections,
+    };
+  }
+
+  // Oportunidades comerciais reais: APENAS HIGH, MEDIUM e LOW com relevância.
+  // Nenhum registro descartado (level === 'NONE') é misturado nas oportunidades comerciais.
+  const commercialOpportunities = assessed.filter((a) => a.level !== 'NONE');
+  const discardedAudit = none.slice(0, 50);
 
   return {
     ok: true,
@@ -431,9 +482,13 @@ export async function scanRadarOpportunities(options: RadarScanOptions = {}): Pr
     mediumIntentCount: medium.length,
     lowIntentCount: low.length,
     discardedCount: none.length,
-    opportunities: filteredOpportunities,
+    metricsBySource,
+    rejectionBreakdown,
+    opportunities: commercialOpportunities,
+    discardedAudit,
     sourceLimitations,
     queriedSources,
     collectedAt: new Date().toISOString(),
   };
 }
+
